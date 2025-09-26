@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Flash IA - Simulateur d'Automatisation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Audit Flash IA</h1>
+            <p class="subtitle">Générez votre roadmap d'automatisation en temps réel</p>
+        </header>
+
+        <main>
+            <div class="form-section">
+                <h2>Décrivez votre activité</h2>
+                <form id="auditForm">
+                    <div class="form-group">
+                        <label for="company">Nom de votre entreprise</label>
+                        <input type="text" id="company" name="company" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sector">Secteur d'activité</label>
+                        <select id="sector" name="sector" required>
+                            <option value="">Sélectionnez votre secteur</option>
+                            <option value="esn">ESN / Services IT</option>
+                            <option value="commerce">Commerce / E-commerce</option>
+                            <option value="service">Services aux entreprises</option>
+                            <option value="industrie">Industrie / Manufacturing</option>
+                            <option value="sante">Santé / Médical</option>
+                            <option value="finance">Finance / Assurance</option>
+                            <option value="education">Éducation / Formation</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="employees">Nombre d'employés</label>
+                        <select id="employees" name="employees" required>
+                            <option value="">Choisissez la taille</option>
+                            <option value="1-10">1-10 employés (TPE)</option>
+                            <option value="11-50">11-50 employés (PME)</option>
+                            <option value="51-250">51-250 employés (PME)</option>
+                            <option value="250+">250+ employés (Grande entreprise)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="processes">Décrivez vos processus métier principaux</label>
+                        <textarea 
+                            id="processes" 
+                            name="processes" 
+                            rows="4" 
+                            placeholder="Ex: Gestion des emails clients, suivi des projets, facturation, reporting..."
+                            required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="painPoints">Quels sont vos principaux défis quotidiens ?</label>
+                        <textarea 
+                            id="painPoints" 
+                            name="painPoints" 
+                            rows="4" 
+                            placeholder="Ex: Trop de tâches répétitives, manque de visibilité sur les KPIs, perte de temps en saisie manuelle..."
+                            required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="tools">Outils actuellement utilisés</label>
+                        <input 
+                            type="text" 
+                            id="tools" 
+                            name="tools" 
+                            placeholder="Ex: Excel, CRM, emails, logiciels métier...">
+                    </div>
+
+                    <button type="submit" id="generateBtn">
+                        <span id="btnText">🔍 Générer ma roadmap d'automatisation</span>
+                        <div id="loader" class="loader hidden"></div>
+                    </button>
+                </form>
+            </div>
+
+            <div class="results-section hidden" id="resultsSection">
+                <h2>🎯 Votre Roadmap d'Automatisation Personnalisée</h2>
+                <div id="roadmapContent" class="roadmap-content"></div>
+                
+                <div class="cta-section">
+                    <h3>Prêt à automatiser votre entreprise ?</h3>
+                    <p>Contactez-nous pour un audit complet et une mise en œuvre personnalisée.</p>
+                    <a href="mailto:contact@equilibretech.com" class="cta-button">Planifier un rendez-vous</a>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Développé par <strong>Equilibre Tech</strong> - Spécialistes en automatisation d'entreprise</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
