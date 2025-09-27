@@ -1,7 +1,7 @@
 class AuditFlashIA {
     constructor() {
-        this.apiKey = process.env.OPENAI_API_KEY || 'YOUR_OPENAI_API_KEY_HERE';
-        this.apiUrl = 'https://api.openai.com/v1/chat/completions';
+        // Utilise l'API Vercel pour gérer les appels OpenAI côté serveur
+        this.apiUrl = '/api/generate-roadmap';
         this.initializeEventListeners();
     }
 
@@ -54,62 +54,23 @@ class AuditFlashIA {
     }
 
     async generateRoadmap(formData) {
-        const prompt = this.buildPrompt(formData);
-        
         const response = await fetch(this.apiUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.apiKey}`
+                'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                model: 'gpt-4',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'Tu es un expert en automatisation d\'entreprise et transformation digitale. Tu génères des roadmaps d\'automatisation personnalisées, concrètes et actionnables.'
-                    },
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ],
-                max_tokens: 1500,
-                temperature: 0.7
-            })
+            body: JSON.stringify({ formData })
         });
 
         if (!response.ok) {
-            throw new Error(`Erreur API: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Erreur API: ${response.status}`);
         }
 
         const data = await response.json();
-        return data.choices[0].message.content;
+        return data.roadmap;
     }
 
-    buildPrompt(formData) {
-        return `
-Entreprise: ${formData.company}
-Secteur: ${formData.sector}
-Taille: ${formData.employees}
-Processus métier: ${formData.processes}
-Défis principaux: ${formData.painPoints}
-Outils actuels: ${formData.tools}
-
-Génère une roadmap d'automatisation personnalisée avec:
-
-1. **DIAGNOSTIC EXPRESS** (2-3 points clés identifiés)
-2. **QUICK WINS** (2-3 automatisations rapides à implémenter en 1-4 semaines)
-3. **PROJETS MOYEN TERME** (2-3 automatisations plus importantes sur 2-6 mois)
-4. **VISION LONG TERME** (transformation digitale complète sur 6-18 mois)
-5. **ROI ESTIMÉ** (gains de temps et coûts approximatifs)
-
-Format en HTML avec des balises <h3>, <ul>, <li>, <strong> pour le styling.
-Sois concret, actionnable et adapté au secteur d'activité.
-Utilise des émojis pour rendre la présentation plus engaging.
-Maximum 800 mots.
-        `;
-    }
 
     displayResults(roadmap) {
         const resultsSection = document.getElementById('resultsSection');
