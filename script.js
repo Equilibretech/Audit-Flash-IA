@@ -723,11 +723,11 @@ function generatePDF() {
         doc.text('SYNTHÈSE EXÉCUTIVE', margin, yPosition);
         yPosition += 20;
         
-        // Stats SANS icônes problématiques
+        // Stats avec icônes simples SANS caractères spéciaux
         const stats = [
-            { icon: '●', label: 'Heures économisées/mois', value: `${savings}h`, color: colors.green },
-            { icon: '●', label: 'ROI annuel estimé', value: `${roi.toLocaleString('fr-FR').replace(/\s/g, ' ')}€`, color: colors.cyan },
-            { icon: '●', label: 'Potentiel d\'automatisation', value: `${automationScore}%`, color: colors.primary }
+            { icon: '', label: 'Heures économisées/mois', value: `${savings}h`, color: colors.green },
+            { icon: '', label: 'ROI annuel estimé', value: `${roi.toLocaleString('fr-FR').replace(/\s/g, ' ')}€`, color: colors.cyan },
+            { icon: '', label: 'Potentiel d\'automatisation', value: `${automationScore}%`, color: colors.primary }
         ];
         
         stats.forEach((stat, index) => {
@@ -742,22 +742,19 @@ function generatePDF() {
             doc.setFillColor(...stat.color);
             doc.rect(margin, yPosition, 3, 20, 'F');
             
-            // Icône
-            doc.setFontSize(12);
-            doc.setTextColor(...stat.color);
-            doc.text(stat.icon, margin + 8, yPosition + 13);
+            // Pas d'icône pour éviter les problèmes d'encodage
             
             // Label
             doc.setFontSize(10);
             doc.setTextColor(...colors.gray);
             doc.setFont('helvetica', 'normal');
-            doc.text(stat.label, margin + 20, yPosition + 8);
+            doc.text(stat.label, margin + 10, yPosition + 8);
             
             // Valeur
             doc.setFontSize(12);
             doc.setTextColor(...stat.color);
             doc.setFont('helvetica', 'bold');
-            doc.text(stat.value, margin + 20, yPosition + 16);
+            doc.text(stat.value, margin + 10, yPosition + 16);
             
             yPosition += 25;
         });

@@ -81,7 +81,7 @@ Processus métier: ${formData.processes}
 Défis principaux: ${formData.painPoints}
 Outils actuels: ${formData.tools}
 
-Génère une roadmap d'automatisation personnalisée au format JSON EXACT suivant (RETOURNE UNIQUEMENT LE JSON, RIEN D'AUTRE):
+GENERATE UNIQUEMENT le JSON suivant (AUCUN texte avant/après, AUCUN markdown):
 
 {
   "sections": [
@@ -90,8 +90,8 @@ Génère une roadmap d'automatisation personnalisée au format JSON EXACT suivan
       "title": "DIAGNOSTIC EXPRESS",
       "items": [
         {
-          "title": "Titre du problème identifié",
-          "description": "Description détaillée du problème et son impact"
+          "title": "Problème principal identifié",
+          "description": "Description concrète du problème et son impact sur l'entreprise"
         }
       ]
     },
@@ -100,8 +100,12 @@ Génère une roadmap d'automatisation personnalisée au format JSON EXACT suivan
       "title": "QUICK WINS",
       "items": [
         {
-          "title": "Titre de l'automatisation rapide",
-          "description": "Description concrète avec outils recommandés et bénéfices"
+          "title": "Action immédiate 1",
+          "description": "Solution rapide avec outils recommandés (ex: Zapier, Monday.com)"
+        },
+        {
+          "title": "Action immédiate 2",
+          "description": "Autre solution rapide avec bénéfices chiffrés"
         }
       ]
     },
@@ -110,8 +114,8 @@ Génère une roadmap d'automatisation personnalisée au format JSON EXACT suivan
       "title": "PROJETS MOYEN TERME", 
       "items": [
         {
-          "title": "Titre du projet moyen terme",
-          "description": "Description détaillée de l'implémentation"
+          "title": "Projet principal",
+          "description": "Description de l'implémentation avec timeline et outils"
         }
       ]
     },
@@ -120,8 +124,8 @@ Génère une roadmap d'automatisation personnalisée au format JSON EXACT suivan
       "title": "VISION LONG TERME",
       "items": [
         {
-          "title": "Titre de la transformation",
-          "description": "Vision de la transformation digitale complète"
+          "title": "Transformation globale",
+          "description": "Vision complète de la digitalisation avec écosystème d'outils"
         }
       ]
     },
@@ -131,22 +135,17 @@ Génère une roadmap d'automatisation personnalisée au format JSON EXACT suivan
       "items": [
         {
           "title": "Gains de temps",
-          "description": "Estimation précise des gains de temps et pourcentages"
+          "description": "Estimation précise: X heures économisées/semaine soit Y% d'amélioration"
         },
         {
-          "title": "Coûts d'implémentation", 
-          "description": "Coûts estimés et retour sur investissement"
+          "title": "Coûts et retour",
+          "description": "Investissement estimé et ROI attendu sur 12 mois"
         }
       ]
     }
   ]
 }
 
-IMPORTANT: 
-- Retourne UNIQUEMENT le JSON valide, sans texte avant ou après
-- 2-3 items par section maximum
-- Descriptions concrètes et actionnables
-- Adaptées au secteur d'activité spécifique
-- Sans emojis ou caractères spéciaux
+IMPÉRATIF: JSON VALIDE uniquement, personnalisé selon les données entreprise, sans emojis/caractères spéciaux
     `;
 }
