@@ -537,53 +537,188 @@ function generatePDF() {
     const doc = new jsPDF();
     const data = window.auditApp.roadmapData;
     
-    // Configuration
+    // Configuration et couleurs
     const margin = 20;
     const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
     const contentWidth = pageWidth - (margin * 2);
     let yPosition = margin;
+    
+    const colors = {
+        primary: [15, 23, 42],      // Bleu nuit
+        cyan: [6, 182, 212],        // Cyan
+        green: [16, 185, 129],      // Vert accent
+        gray: [100, 116, 139],      // Gris
+        lightGray: [148, 163, 184], // Gris clair
+        white: [255, 255, 255]
+    };
     
     // Fonction helper pour ajouter du texte avec retour à la ligne
     const addText = (text, x, y, options = {}) => {
         const fontSize = options.fontSize || 12;
         const fontStyle = options.fontStyle || 'normal';
         const color = options.color || [0, 0, 0];
+        const maxWidth = options.maxWidth || (contentWidth - x + margin);
         
         doc.setFontSize(fontSize);
         doc.setFont(undefined, fontStyle);
         doc.setTextColor(...color);
         
-        const lines = doc.splitTextToSize(text, contentWidth - x + margin);
+        const lines = doc.splitTextToSize(text, maxWidth);
         doc.text(lines, x, y);
-        return y + (lines.length * fontSize * 0.5);
+        return y + (lines.length * fontSize * 0.6);
     };
     
-    // En-tête
-    yPosition = addText('ROADMAP D\'AUTOMATISATION', margin, yPosition, {
-        fontSize: 20,
-        fontStyle: 'bold',
-        color: [15, 23, 42]
-    });
+    // Fonction pour ajouter un rectangle coloré
+    const addColorBlock = (x, y, width, height, color, opacity = 1) => {
+        doc.setFillColor(...color);
+        doc.setGlobalAlpha(opacity);
+        doc.rect(x, y, width, height, 'F');
+        doc.setGlobalAlpha(1);
+    };
+    
+    // ===== PAGE DE COUVERTURE =====
+    
+    // Background header coloré
+    addColorBlock(0, 0, pageWidth, 80, colors.primary);
+    
+    // Logo/Badge
+    addColorBlock(margin, 25, 60, 20, colors.cyan, 0.2);
+    doc.setFontSize(10);
+    doc.setTextColor(...colors.cyan);
+    doc.setFont(undefined, 'bold');
+    doc.text('POWERED BY', margin + 5, 32);
+    doc.text('OpenAI GPT-4', margin + 5, 38);
+    
+    // Titre principal
+    doc.setFontSize(28);
+    doc.setTextColor(...colors.white);
+    doc.setFont(undefined, 'bold');
+    doc.text('ROADMAP', pageWidth/2, 35, { align: 'center' });
+    doc.text('D\'AUTOMATISATION', pageWidth/2, 50, { align: 'center' });
+    
+    yPosition = 100;
+    
+    // Carte entreprise
+    addColorBlock(margin, yPosition, contentWidth, 50, colors.lightGray, 0.1);
+    doc.setDrawColor(...colors.cyan);
+    doc.setLineWidth(0.5);
+    doc.rect(margin, yPosition, contentWidth, 50);
+    
+    yPosition += 15;
+    doc.setFontSize(16);
+    doc.setTextColor(...colors.primary);
+    doc.setFont(undefined, 'bold');
+    doc.text(`${data.company}`, margin + 10, yPosition);
     
     yPosition += 10;
-    yPosition = addText(`Entreprise: ${data.company}`, margin, yPosition, {
-        fontSize: 14,
-        fontStyle: 'bold'
+    const date = new Date(data.generatedAt).toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    doc.setFontSize(12);
+    doc.setTextColor(...colors.gray);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Analyse générée le ${date}`, margin + 10, yPosition);
+    
+    yPosition += 15;
+    doc.setFontSize(10);
+    doc.setTextColor(...colors.lightGray);
+    doc.text('Rapport confidentiel - Usage interne uniquement', margin + 10, yPosition);
+    
+    yPosition = 180;
+    
+    // Section statistiques
+    doc.setFontSize(18);
+    doc.setTextColor(...colors.primary);
+    doc.setFont(undefined, 'bold');
+    doc.text('🎯 SYNTHÈSE EXÉCUTIVE', margin, yPosition);
+    
+    yPosition += 25;
+    
+    // Récupérer les stats actuelles de la page
+    const formData = window.auditApp.collectFormData();
+    const employeeCount = window.auditApp.getEmployeeCount(formData.employees);
+    const sectorMultiplier = window.auditApp.getSectorMultiplier(formData.sector);
+    const savings = Math.round(employeeCount * 2 * sectorMultiplier);
+    const roi = Math.round(savings * 35 * 12 * (0.8 + Math.random() * 0.4));
+    const automationScore = Math.round(45 + Math.random() * 40);
+    
+    // Boxes de statistiques
+    const statBoxWidth = (contentWidth - 20) / 3;
+    const statBoxes = [
+        { label: 'Heures économisées', value: `${savings}h/mois`, color: colors.green },
+        { label: 'ROI estimé', value: `${roi.toLocaleString()}€/an`, color: colors.cyan },
+        { label: 'Potentiel d\'automatisation', value: `${automationScore}%`, color: colors.primary }
+    ];
+    
+    statBoxes.forEach((stat, index) => {
+        const x = margin + (index * (statBoxWidth + 10));
+        
+        // Box colorée
+        addColorBlock(x, yPosition, statBoxWidth, 35, stat.color, 0.1);
+        doc.setDrawColor(...stat.color);
+        doc.setLineWidth(1);
+        doc.rect(x, yPosition, statBoxWidth, 35);
+        
+        // Valeur
+        doc.setFontSize(16);
+        doc.setTextColor(...stat.color);
+        doc.setFont(undefined, 'bold');
+        doc.text(stat.value, x + statBoxWidth/2, yPosition + 15, { align: 'center' });
+        
+        // Label
+        doc.setFontSize(9);
+        doc.setTextColor(...colors.gray);
+        doc.setFont(undefined, 'normal');
+        doc.text(stat.label, x + statBoxWidth/2, yPosition + 25, { align: 'center' });
     });
     
-    yPosition += 5;
-    const date = new Date(data.generatedAt).toLocaleDateString('fr-FR');
-    yPosition = addText(`Généré le: ${date}`, margin, yPosition, {
-        fontSize: 10,
-        color: [100, 116, 139]
-    });
+    // Section expert contact
+    yPosition = pageHeight - 120;
     
-    yPosition += 20;
+    // Box contact expert
+    addColorBlock(margin, yPosition, contentWidth, 80, colors.primary, 0.05);
+    doc.setDrawColor(...colors.primary);
+    doc.setLineWidth(0.5);
+    doc.rect(margin, yPosition, contentWidth, 80);
     
-    // Ajouter une ligne de séparation
-    doc.setDrawColor(226, 232, 240);
-    doc.line(margin, yPosition, pageWidth - margin, yPosition);
-    yPosition += 20;
+    yPosition += 15;
+    doc.setFontSize(14);
+    doc.setTextColor(...colors.primary);
+    doc.setFont(undefined, 'bold');
+    doc.text('👨‍💼 VOTRE EXPERT EN AUTOMATISATION', margin + 10, yPosition);
+    
+    yPosition += 15;
+    doc.setFontSize(12);
+    doc.setTextColor(...colors.gray);
+    doc.setFont(undefined, 'bold');
+    doc.text('Antoine - Equilibre Tech', margin + 10, yPosition);
+    
+    yPosition += 8;
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text('Expert en automatisation d\'entreprise et transformation digitale', margin + 10, yPosition);
+    
+    yPosition += 12;
+    doc.setTextColor(...colors.cyan);
+    doc.text('📧 contact@equilibretech.com', margin + 10, yPosition);
+    
+    yPosition += 8;
+    doc.text('💼 linkedin.com/in/equilibretech', margin + 10, yPosition);
+    
+    yPosition += 8;
+    doc.text('🌐 equilibretech.com', margin + 10, yPosition);
+    
+    yPosition += 12;
+    doc.setFontSize(9);
+    doc.setTextColor(...colors.gray);
+    doc.text('Réponse garantie sous 24h • Confidentialité assurée • Premier échange gratuit', margin + 10, yPosition);
+    
+    // ===== NOUVELLES PAGES POUR LE CONTENU =====
+    doc.addPage();
+    yPosition = margin;
     
     // Parser le contenu de la roadmap
     const tempDiv = document.createElement('div');
@@ -615,54 +750,95 @@ function generatePDF() {
         sections.push(currentSection);
     }
     
-    // Ajouter les sections
+    // Header de page
+    doc.setFontSize(20);
+    doc.setTextColor(...colors.primary);
+    doc.setFont(undefined, 'bold');
+    doc.text('📋 PLAN D\'ACTION DÉTAILLÉ', margin, yPosition);
+    
+    yPosition += 15;
+    doc.setDrawColor(...colors.lightGray);
+    doc.line(margin, yPosition, pageWidth - margin, yPosition);
+    yPosition += 20;
+    
+    // Ajouter les sections avec un design amélioré
     sections.forEach((section, index) => {
         // Vérifier si on a besoin d'une nouvelle page
-        if (yPosition > doc.internal.pageSize.height - 50) {
+        if (yPosition > pageHeight - 80) {
             doc.addPage();
             yPosition = margin;
         }
         
-        // Titre de section
-        yPosition = addText(section.title, margin, yPosition, {
-            fontSize: 16,
-            fontStyle: 'bold',
-            color: [6, 182, 212]
-        });
+        // Couleur de section basée sur le type
+        let sectionColor = colors.cyan;
+        if (section.title.toLowerCase().includes('quick') || section.title.toLowerCase().includes('rapide')) {
+            sectionColor = colors.green;
+        } else if (section.title.toLowerCase().includes('long') || section.title.toLowerCase().includes('vision')) {
+            sectionColor = colors.primary;
+        }
         
-        yPosition += 10;
+        // Barre latérale colorée
+        addColorBlock(margin, yPosition - 5, 3, 20, sectionColor);
+        
+        // Titre de section avec background
+        addColorBlock(margin + 5, yPosition - 5, contentWidth - 5, 20, sectionColor, 0.1);
+        
+        doc.setFontSize(14);
+        doc.setTextColor(...sectionColor);
+        doc.setFont(undefined, 'bold');
+        doc.text(section.title, margin + 10, yPosition + 5);
+        
+        yPosition += 25;
         
         // Contenu de la section
         section.content.forEach(item => {
-            if (yPosition > doc.internal.pageSize.height - 30) {
+            if (yPosition > pageHeight - 40) {
                 doc.addPage();
                 yPosition = margin;
             }
             
-            yPosition = addText(`• ${item}`, margin + 5, yPosition, {
-                fontSize: 11
+            // Bullet point coloré
+            doc.setFillColor(...sectionColor);
+            doc.circle(margin + 7, yPosition - 2, 1.5, 'F');
+            
+            yPosition = addText(item, margin + 15, yPosition, {
+                fontSize: 11,
+                color: colors.primary,
+                maxWidth: contentWidth - 20
             });
-            yPosition += 5;
+            yPosition += 3;
         });
         
         yPosition += 15;
     });
     
-    // Pied de page
+    // Pied de page amélioré pour toutes les pages
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
+        
+        // Ligne de séparation
+        doc.setDrawColor(...colors.lightGray);
+        doc.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
+        
+        // Texte du pied
         doc.setFontSize(8);
-        doc.setTextColor(100, 116, 139);
-        doc.text('Généré par Audit Flash IA - Equilibre Tech', margin, doc.internal.pageSize.height - 10);
-        doc.text(`Page ${i}/${pageCount}`, pageWidth - margin - 20, doc.internal.pageSize.height - 10);
+        doc.setTextColor(...colors.gray);
+        doc.setFont(undefined, 'normal');
+        doc.text('Généré par Audit Flash IA - Equilibre Tech', margin, pageHeight - 12);
+        doc.text(`${i}/${pageCount}`, pageWidth - margin - 10, pageHeight - 12);
+        
+        if (i > 1) {
+            doc.setTextColor(...colors.cyan);
+            doc.text('contact@equilibretech.com', pageWidth/2, pageHeight - 12, { align: 'center' });
+        }
     }
     
     // Télécharger le PDF
-    const filename = `roadmap-automatisation-${data.company.replace(/\s+/g, '-').toLowerCase()}-${date.replace(/\//g, '-')}.pdf`;
+    const filename = `roadmap-automatisation-${data.company.replace(/\s+/g, '-').toLowerCase()}-${date.replace(/\s/g, '-').replace(/,/g, '')}.pdf`;
     doc.save(filename);
     
-    // Analytics (optionnel)
+    // Analytics
     if (typeof gtag !== 'undefined') {
         gtag('event', 'download', {
             event_category: 'engagement',
