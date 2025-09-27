@@ -3,103 +3,346 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audit Flash IA - Simulateur d'Automatisation</title>
+    <title>Audit Flash IA - Transformez votre entreprise en 60 secondes</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🚀 Audit Flash IA</h1>
-            <p class="subtitle">Générez votre roadmap d'automatisation en temps réel</p>
-        </header>
-
-        <main>
-            <div class="form-section">
-                <h2>Décrivez votre activité</h2>
-                <form id="auditForm">
-                    <div class="form-group">
-                        <label for="company">Nom de votre entreprise</label>
-                        <input type="text" id="company" name="company" required>
+    <!-- 1. Hero / Accroche -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <span class="badge">✨ Powered by OpenAI GPT-4</span>
+                    <h1 class="hero-title">
+                        Découvrez votre potentiel d'<span class="highlight">automatisation</span> en 60 secondes
+                    </h1>
+                    <p class="hero-subtitle">
+                        Obtenez une roadmap personnalisée d'automatisation pour votre entreprise. 
+                        Analysée par l'IA, adaptée à votre secteur.
+                    </p>
+                    <div class="hero-cta">
+                        <button class="cta-primary" onclick="scrollToDemo()">
+                            🚀 Lancez votre audit flash gratuit
+                        </button>
+                        <div class="hero-stats">
+                            <div class="stat">
+                                <span class="stat-number" data-target="73">0</span>%
+                                <span class="stat-label">gain de productivité moyen</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number" data-target="2.5">0</span>h
+                                <span class="stat-label">économisées par jour</span>
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="sector">Secteur d'activité</label>
-                        <select id="sector" name="sector" required>
-                            <option value="">Sélectionnez votre secteur</option>
-                            <option value="esn">ESN / Services IT</option>
-                            <option value="commerce">Commerce / E-commerce</option>
-                            <option value="service">Services aux entreprises</option>
-                            <option value="industrie">Industrie / Manufacturing</option>
-                            <option value="sante">Santé / Médical</option>
-                            <option value="finance">Finance / Assurance</option>
-                            <option value="education">Éducation / Formation</option>
-                            <option value="autre">Autre</option>
-                        </select>
+                </div>
+                <div class="hero-visual">
+                    <div class="dashboard-mockup">
+                        <div class="mockup-header">
+                            <div class="mockup-dots">
+                                <span></span><span></span><span></span>
+                            </div>
+                        </div>
+                        <div class="mockup-content">
+                            <div class="roi-card">
+                                <div class="roi-title">ROI Estimé</div>
+                                <div class="roi-value">
+                                    <span class="currency">€</span>
+                                    <span class="amount" data-target="45000">0</span>
+                                    <span class="period">/an</span>
+                                </div>
+                            </div>
+                            <div class="progress-bars">
+                                <div class="progress-item">
+                                    <span>Quick Wins</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="--width: 85%"></div>
+                                    </div>
+                                </div>
+                                <div class="progress-item">
+                                    <span>Projets Moyen Terme</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="--width: 65%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="employees">Nombre d'employés</label>
-                        <select id="employees" name="employees" required>
-                            <option value="">Choisissez la taille</option>
-                            <option value="1-10">1-10 employés (TPE)</option>
-                            <option value="11-50">11-50 employés (PME)</option>
-                            <option value="51-250">51-250 employés (PME)</option>
-                            <option value="250+">250+ employés (Grande entreprise)</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="processes">Décrivez vos processus métier principaux</label>
-                        <textarea 
-                            id="processes" 
-                            name="processes" 
-                            rows="4" 
-                            placeholder="Ex: Gestion des emails clients, suivi des projets, facturation, reporting..."
-                            required></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="painPoints">Quels sont vos principaux défis quotidiens ?</label>
-                        <textarea 
-                            id="painPoints" 
-                            name="painPoints" 
-                            rows="4" 
-                            placeholder="Ex: Trop de tâches répétitives, manque de visibilité sur les KPIs, perte de temps en saisie manuelle..."
-                            required></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="tools">Outils actuellement utilisés</label>
-                        <input 
-                            type="text" 
-                            id="tools" 
-                            name="tools" 
-                            placeholder="Ex: Excel, CRM, emails, logiciels métier...">
-                    </div>
-
-                    <button type="submit" id="generateBtn">
-                        <span id="btnText">🔍 Générer ma roadmap d'automatisation</span>
-                        <div id="loader" class="loader hidden"></div>
-                    </button>
-                </form>
-            </div>
-
-            <div class="results-section hidden" id="resultsSection">
-                <h2>🎯 Votre Roadmap d'Automatisation Personnalisée</h2>
-                <div id="roadmapContent" class="roadmap-content"></div>
-                
-                <div class="cta-section">
-                    <h3>Prêt à automatiser votre entreprise ?</h3>
-                    <p>Contactez-nous pour un audit complet et une mise en œuvre personnalisée.</p>
-                    <a href="mailto:contact@equilibretech.com" class="cta-button">Planifier un rendez-vous</a>
                 </div>
             </div>
-        </main>
+        </div>
+    </section>
 
-        <footer>
-            <p>Développé par <strong>Equilibre Tech</strong> - Spécialistes en automatisation d'entreprise</p>
-        </footer>
-    </div>
+    <!-- 2. Problème / Douleur client -->
+    <section class="problem">
+        <div class="container">
+            <div class="problem-content">
+                <h2 class="section-title">Le défi des entreprises modernes</h2>
+                <div class="problem-stats">
+                    <div class="problem-stat">
+                        <div class="problem-icon">⏰</div>
+                        <div class="problem-text">
+                            <strong>80% des PME</strong> perdent plus de 3h par jour sur des tâches manuelles répétitives
+                        </div>
+                    </div>
+                    <div class="problem-stat">
+                        <div class="problem-icon">💸</div>
+                        <div class="problem-text">
+                            <strong>67% des dirigeants</strong> estiment perdre plus de 50k€/an en productivité
+                        </div>
+                    </div>
+                    <div class="problem-stat">
+                        <div class="problem-icon">😤</div>
+                        <div class="problem-text">
+                            <strong>9 collaborateurs sur 10</strong> sont frustrés par les processus inefficaces
+                        </div>
+                    </div>
+                </div>
+                <p class="problem-conclusion">
+                    Et si vous pouviez identifier en quelques minutes les leviers d'automatisation 
+                    les plus impactants pour votre entreprise ?
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Solution / Démo interactive -->
+    <section class="demo" id="demo">
+        <div class="container">
+            <div class="demo-header">
+                <h2 class="section-title">Votre audit personnalisé en 3 étapes</h2>
+                <p class="section-subtitle">Répondez à quelques questions et obtenez votre roadmap d'automatisation</p>
+            </div>
+
+            <div class="stepper-container">
+                <!-- Stepper Navigation -->
+                <div class="stepper-nav">
+                    <div class="step active" data-step="1">
+                        <div class="step-number">1</div>
+                        <div class="step-label">Votre entreprise</div>
+                    </div>
+                    <div class="step" data-step="2">
+                        <div class="step-number">2</div>
+                        <div class="step-label">Vos processus</div>
+                    </div>
+                    <div class="step" data-step="3">
+                        <div class="step-number">3</div>
+                        <div class="step-label">Vos défis</div>
+                    </div>
+                </div>
+
+                <!-- Form Steps -->
+                <form id="auditForm" class="stepper-form">
+                    <!-- Étape 1: Informations entreprise -->
+                    <div class="form-step active" data-step="1">
+                        <h3>Parlez-nous de votre entreprise</h3>
+                        <div class="form-group">
+                            <label for="company">Nom de votre entreprise</label>
+                            <input type="text" id="company" name="company" placeholder="Ex: Ma Super Entreprise" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="sector">Secteur d'activité</label>
+                                <select id="sector" name="sector" required>
+                                    <option value="">Sélectionnez votre secteur</option>
+                                    <option value="esn">ESN / Services IT</option>
+                                    <option value="commerce">Commerce / E-commerce</option>
+                                    <option value="service">Services aux entreprises</option>
+                                    <option value="industrie">Industrie / Manufacturing</option>
+                                    <option value="sante">Santé / Médical</option>
+                                    <option value="finance">Finance / Assurance</option>
+                                    <option value="education">Éducation / Formation</option>
+                                    <option value="autre">Autre</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="employees">Nombre d'employés</label>
+                                <select id="employees" name="employees" required>
+                                    <option value="">Choisissez la taille</option>
+                                    <option value="1-10">1-10 employés (TPE)</option>
+                                    <option value="11-50">11-50 employés (PME)</option>
+                                    <option value="51-250">51-250 employés (PME)</option>
+                                    <option value="250+">250+ employés (Grande entreprise)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-next" onclick="nextStep()">Continuer</button>
+                    </div>
+
+                    <!-- Étape 2: Processus métier -->
+                    <div class="form-step" data-step="2">
+                        <h3>Vos processus actuels</h3>
+                        <div class="form-group">
+                            <label for="processes">Décrivez vos processus métier principaux</label>
+                            <textarea 
+                                id="processes" 
+                                name="processes" 
+                                rows="4" 
+                                placeholder="Ex: Gestion des emails clients, suivi des projets, facturation, reporting..."
+                                required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="tools">Outils actuellement utilisés</label>
+                            <input 
+                                type="text" 
+                                id="tools" 
+                                name="tools" 
+                                placeholder="Ex: Excel, CRM, emails, logiciels métier...">
+                        </div>
+                        <div class="step-buttons">
+                            <button type="button" class="btn-prev" onclick="prevStep()">Retour</button>
+                            <button type="button" class="btn-next" onclick="nextStep()">Continuer</button>
+                        </div>
+                    </div>
+
+                    <!-- Étape 3: Défis et génération -->
+                    <div class="form-step" data-step="3">
+                        <h3>Vos défis quotidiens</h3>
+                        <div class="form-group">
+                            <label for="painPoints">Quels sont vos principaux défis ?</label>
+                            <textarea 
+                                id="painPoints" 
+                                name="painPoints" 
+                                rows="4" 
+                                placeholder="Ex: Trop de tâches répétitives, manque de visibilité sur les KPIs, perte de temps en saisie manuelle..."
+                                required></textarea>
+                        </div>
+                        <div class="step-buttons">
+                            <button type="button" class="btn-prev" onclick="prevStep()">Retour</button>
+                            <button type="submit" id="generateBtn" class="btn-generate">
+                                <span id="btnText">🧠 Générer ma roadmap IA</span>
+                                <div id="loader" class="loader hidden"></div>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Résultats & bénéfices -->
+    <section class="results hidden" id="resultsSection">
+        <div class="container">
+            <div class="results-header">
+                <h2 class="section-title">🎯 Votre Roadmap d'Automatisation Personnalisée</h2>
+                <p class="section-subtitle">Voici vos opportunités d'automatisation classées par priorité</p>
+            </div>
+            
+            <div id="roadmapContent" class="roadmap-grid"></div>
+
+            <div class="results-cta">
+                <div class="cta-card">
+                    <h3>Prêt à passer à l'action ?</h3>
+                    <p>Contactez-moi pour un audit complet et une mise en œuvre personnalisée.</p>
+                    <div class="cta-buttons">
+                        <a href="mailto:contact@equilibretech.com" class="cta-primary">
+                            📧 Me contacter
+                        </a>
+                        <button onclick="downloadPDF()" class="cta-secondary">
+                            📋 Télécharger la roadmap
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Preuve sociale & contact -->
+    <section class="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2 class="section-title">Qui je suis</h2>
+                    <p class="about-description">
+                        Expert en automatisation d'entreprise et transformation digitale, j'aide les ESN, PME et TPE 
+                        à optimiser leurs processus grâce à l'IA et aux outils No-Code.
+                    </p>
+                    <div class="credentials">
+                        <div class="credential">
+                            <span class="credential-icon">🏆</span>
+                            <span>+50 entreprises accompagnées</span>
+                        </div>
+                        <div class="credential">
+                            <span class="credential-icon">⚡</span>
+                            <span>Moyenne de 70% de gain de productivité</span>
+                        </div>
+                        <div class="credential">
+                            <span class="credential-icon">🎯</span>
+                            <span>ROI moyen de 300% la première année</span>
+                        </div>
+                    </div>
+                    <div class="social-links">
+                        <a href="https://linkedin.com/in/equilibretech" class="social-link" target="_blank">
+                            💼 LinkedIn
+                        </a>
+                        <a href="https://github.com/Equilibretech" class="social-link" target="_blank">
+                            💻 GitHub
+                        </a>
+                        <a href="https://equilibretech.com" class="social-link" target="_blank">
+                            🌐 Portfolio
+                        </a>
+                    </div>
+                </div>
+                <div class="testimonials">
+                    <h3>Ce qu'en disent mes clients</h3>
+                    <div class="testimonial">
+                        <div class="testimonial-content">
+                            "Grâce à Antoine, nous avons automatisé 80% de notre facturation. 
+                            Un gain de 15h par semaine !"
+                        </div>
+                        <div class="testimonial-author">
+                            <strong>Sarah M.</strong> - Directrice, Agence Créative (15 employés)
+                        </div>
+                    </div>
+                    <div class="testimonial">
+                        <div class="testimonial-content">
+                            "L'audit flash nous a ouvert les yeux sur notre potentiel d'automatisation. 
+                            ROI de 250% dès la première année."
+                        </div>
+                        <div class="testimonial-author">
+                            <strong>Marc L.</strong> - CEO, ESN (35 employés)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Final -->
+    <section class="final-cta">
+        <div class="container">
+            <div class="final-cta-content">
+                <h2>Transformez vos processus dès aujourd'hui</h2>
+                <p>Rejoignez les entreprises qui ont déjà accéléré leur transformation digitale</p>
+                <button class="cta-primary large" onclick="scrollToDemo()">
+                    🚀 Testez gratuitement votre audit flash
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="footer-logo">⚡ Equilibre Tech</div>
+                    <p>Spécialistes en automatisation d'entreprise</p>
+                </div>
+                <div class="footer-right">
+                    <div class="disclaimer">
+                        <small>
+                            * Résultats fournis à titre indicatif. Les gains réels peuvent varier selon votre contexte.
+                            <br>Cet outil utilise l'IA OpenAI GPT-4 pour générer des recommandations personnalisées.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
 </body>
