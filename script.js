@@ -677,11 +677,11 @@ function generatePDF() {
         
         // Badge moderne "AI-Powered"
         doc.setFillColor(...colors.white);
-        doc.roundedRect(140, 8, 60, 12, 3, 3, 'F');
+        doc.rect(140, 8, 60, 12, 'F');
         doc.setFontSize(7);
         doc.setTextColor(...colors.accent);
         doc.setFont('helvetica', 'bold');
-        doc.text('🤖 AI-POWERED', 170, 16, { align: 'center' });
+        doc.text('AI-POWERED', 170, 16, { align: 'center' });
         
         // Titre principal avec style moderne
         doc.setFontSize(24);
@@ -700,12 +700,12 @@ function generatePDF() {
         
         // Card entreprise moderne avec ombre
         doc.setFillColor(250, 250, 250);
-        doc.roundedRect(margin + 2, yPosition + 2, 170, 40, 5, 5, 'F'); // Ombre
+        doc.rect(margin + 2, yPosition + 2, 170, 40, 'F'); // Ombre
         doc.setFillColor(...colors.white);
-        doc.roundedRect(margin, yPosition, 170, 40, 5, 5, 'F');
+        doc.rect(margin, yPosition, 170, 40, 'F');
         doc.setDrawColor(...colors.accent);
         doc.setLineWidth(0.8);
-        doc.roundedRect(margin, yPosition, 170, 40, 5, 5, 'S');
+        doc.rect(margin, yPosition, 170, 40, 'S');
         
         // Icône entreprise
         doc.setFillColor(...colors.accent);
@@ -713,7 +713,7 @@ function generatePDF() {
         doc.setFontSize(10);
         doc.setTextColor(...colors.white);
         doc.setFont('helvetica', 'bold');
-        doc.text('🏢', margin + 12, yPosition + 24);
+        doc.text('E', margin + 12, yPosition + 24);
         
         // Nom entreprise
         doc.setFontSize(20);
@@ -725,7 +725,7 @@ function generatePDF() {
         doc.setFontSize(9);
         doc.setTextColor(...colors.gray);
         doc.setFont('helvetica', 'normal');
-        doc.text(`📅 Généré le ${date}`, margin + 30, yPosition + 30);
+        doc.text(`Genere le ${date}`, margin + 30, yPosition + 30);
         
         yPosition += 60;
         
@@ -746,11 +746,11 @@ function generatePDF() {
         
         // Titre section avec style moderne
         doc.setFillColor(...colors.primary);
-        doc.roundedRect(margin, yPosition, 170, 20, 3, 3, 'F');
+        doc.rect(margin, yPosition, 170, 20, 'F');
         doc.setFontSize(14);
         doc.setTextColor(...colors.white);
         doc.setFont('helvetica', 'bold');
-        doc.text('📊 SYNTHÈSE EXÉCUTIVE', margin + 15, yPosition + 13);
+        doc.text('SYNTHESE EXECUTIVE', margin + 15, yPosition + 13);
         yPosition += 35;
         
         stats.forEach((stat, index) => {
@@ -759,15 +759,15 @@ function generatePDF() {
             
             // Ombre de la card
             doc.setFillColor(240, 240, 240);
-            doc.roundedRect(margin + 1, yPosition + 1, cardWidth, cardHeight, 4, 4, 'F');
+            doc.rect(margin + 1, yPosition + 1, cardWidth, cardHeight, 'F');
             
             // Background de la card
             doc.setFillColor(...stat.bgColor);
-            doc.roundedRect(margin, yPosition, cardWidth, cardHeight, 4, 4, 'F');
+            doc.rect(margin, yPosition, cardWidth, cardHeight, 'F');
             
             // Bordure colorée à gauche
             doc.setFillColor(...stat.color);
-            doc.roundedRect(margin, yPosition, 6, cardHeight, 4, 4, 'F');
+            doc.rect(margin, yPosition, 6, cardHeight, 'F');
             
             // Icône dans un cercle
             doc.setFillColor(...stat.color);
@@ -796,9 +796,9 @@ function generatePDF() {
         
         // Section contact moderne avec dégradé
         doc.setFillColor(...colors.gradient1);
-        doc.roundedRect(margin, yPosition, 170, 60, 8, 8, 'F');
+        doc.rect(margin, yPosition, 170, 60, 'F');
         doc.setFillColor(...colors.gradient2);
-        doc.roundedRect(margin, yPosition, 170, 30, 8, 8, 'F');
+        doc.rect(margin, yPosition, 170, 30, 'F');
         
         // Avatar expert
         doc.setFillColor(...colors.white);
@@ -808,7 +808,7 @@ function generatePDF() {
         doc.setFontSize(12);
         doc.setTextColor(...colors.white);
         doc.setFont('helvetica', 'bold');
-        doc.text('👨‍💼', margin + 20, yPosition + 35);
+        doc.text('A', margin + 20, yPosition + 35);
         
         // Titre contact
         doc.setFontSize(13);
@@ -826,9 +826,9 @@ function generatePDF() {
         doc.setFontSize(8);
         doc.setTextColor(240, 240, 240);
         doc.setFont('helvetica', 'normal');
-        doc.text('📧 contact@equilibretech.com', margin + 45, yPosition + 42);
-        doc.text('💼 linkedin.com/in/equilibretech', margin + 45, yPosition + 50);
-        doc.text('🎯 Spécialiste transformation digitale', margin + 45, yPosition + 58);
+        doc.text('Email: contact@equilibretech.com', margin + 45, yPosition + 42);
+        doc.text('LinkedIn: linkedin.com/in/equilibretech', margin + 45, yPosition + 50);
+        doc.text('Specialiste transformation digitale', margin + 45, yPosition + 58);
         
         // ===== PAGE 2: PLAN D'ACTION MODERNE =====
         doc.addPage();
@@ -843,7 +843,7 @@ function generatePDF() {
         doc.setFontSize(18);
         doc.setTextColor(...colors.white);
         doc.setFont('helvetica', 'bold');
-        doc.text('🚀 PLAN D\'ACTION PERSONNALISÉ', 105, 25, { align: 'center' });
+        doc.text('PLAN D\'ACTION PERSONNALISE', 105, 25, { align: 'center' });
         
         yPosition = 60;
         
@@ -852,7 +852,7 @@ function generatePDF() {
             // NOUVEAU: Traitement direct du JSON structuré
             const sections = data.roadmap.sections;
             let sectionCount = 0;
-            const sectionIcons = ['🔍', '⚡', '🚀', '🎯', '💰'];
+            const sectionIcons = ['DIAG', 'QUICK', 'MOYEN', 'LONG', 'ROI'];
             const sectionColors = [colors.accent, colors.success, colors.warning, colors.purple, colors.gradient1];
             
             sections.forEach(section => {
@@ -866,16 +866,16 @@ function generatePDF() {
                 
                 // Card moderne pour chaque section
                 doc.setFillColor(245, 245, 245);
-                doc.roundedRect(margin + 2, yPosition + 2, 170, 35, 8, 8, 'F'); // Ombre
+                doc.rect(margin + 2, yPosition + 2, 170, 35, 'F'); // Ombre
                 
                 doc.setFillColor(...colors.white);
-                doc.roundedRect(margin, yPosition, 170, 35, 8, 8, 'F');
+                doc.rect(margin, yPosition, 170, 35, 'F');
                 
                 // Gradient header de section
                 doc.setFillColor(...currentColor);
-                doc.roundedRect(margin, yPosition, 170, 25, 8, 8, 'F');
+                doc.rect(margin, yPosition, 170, 25, 'F');
                 doc.setFillColor(...colors.white);
-                doc.roundedRect(margin, yPosition + 20, 170, 15, 0, 0, 'F');
+                doc.rect(margin, yPosition + 20, 170, 15, 'F');
                 
                 // Badge numéro avec icône
                 doc.setFillColor(...colors.white);
@@ -889,7 +889,7 @@ function generatePDF() {
                 doc.text((sectionCount + 1).toString(), margin + 17, yPosition + 15);
                 
                 // Icône de section
-                doc.setFontSize(10);
+                doc.setFontSize(7);
                 doc.text(currentIcon, margin + 38, yPosition + 15);
                 
                 // Titre de section moderne
@@ -913,14 +913,14 @@ function generatePDF() {
                         const itemHeight = 25 + Math.ceil(item.description.length / 70) * 8;
                         
                         doc.setFillColor(250, 250, 250);
-                        doc.roundedRect(margin + 12, yPosition + 1, 156, itemHeight, 4, 4, 'F'); // Ombre
+                        doc.rect(margin + 12, yPosition + 1, 156, itemHeight, 'F'); // Ombre
                         
                         doc.setFillColor(...colors.white);
-                        doc.roundedRect(margin + 10, yPosition, 156, itemHeight, 4, 4, 'F');
+                        doc.rect(margin + 10, yPosition, 156, itemHeight, 'F');
                         
                         // Indicateur coloré
                         doc.setFillColor(...currentColor);
-                        doc.roundedRect(margin + 10, yPosition, 4, itemHeight, 4, 4, 'F');
+                        doc.rect(margin + 10, yPosition, 4, itemHeight, 'F');
                         
                         // Bullet point moderne
                         doc.setFillColor(...currentColor);
