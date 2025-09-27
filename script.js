@@ -424,17 +424,108 @@ class AuditFlashIA {
 
     setLoadingState(isLoading) {
         const btn = document.getElementById('generateBtn');
-        const btnText = document.getElementById('btnText');
-        const loader = document.getElementById('loader');
+        const loadingContainer = document.getElementById('loadingContainer');
         
         if (isLoading) {
             btn.disabled = true;
-            btnText.style.display = 'none';
-            loader.classList.remove('hidden');
+            btn.classList.add('loading');
+            btn.innerHTML = '<span>⏳ Génération en cours...</span>';
+            this.showLoadingModal();
         } else {
             btn.disabled = false;
-            btnText.style.display = 'inline';
-            loader.classList.add('hidden');
+            btn.classList.remove('loading');
+            btn.innerHTML = '<span id="btnText">🧠 Générer ma roadmap IA</span>';
+            this.hideLoadingModal();
+        }
+    }
+
+    showLoadingModal() {
+        const loadingContainer = document.getElementById('loadingContainer');
+        loadingContainer.style.display = 'flex';
+        
+        // Simulation des étapes de progression
+        this.simulateProgress();
+    }
+
+    hideLoadingModal() {
+        const loadingContainer = document.getElementById('loadingContainer');
+        loadingContainer.style.display = 'none';
+        
+        // Reset des étapes
+        this.resetProgress();
+    }
+
+    simulateProgress() {
+        const steps = [
+            { message: "Analyse de votre secteur d'activité...", duration: 3000 },
+            { message: "Identification des processus à optimiser...", duration: 5000 },
+            { message: "Calcul du ROI et des gains potentiels...", duration: 4000 },
+            { message: "Génération de la roadmap personnalisée...", duration: 8000 },
+            { message: "Finalisation du document PDF...", duration: 3000 }
+        ];
+
+        const progressBar = document.getElementById('progressBar');
+        const loadingMessage = document.getElementById('loadingMessage');
+        let currentStep = 0;
+        let totalDuration = 0;
+
+        steps.forEach(step => totalDuration += step.duration);
+        let elapsedTime = 0;
+
+        const updateStep = () => {
+            if (currentStep < steps.length) {
+                // Mise à jour du message
+                loadingMessage.textContent = steps[currentStep].message;
+                
+                // Mise à jour des icônes d'étapes
+                const stepIcon = document.getElementById(`step${currentStep + 1}`);
+                stepIcon.classList.add('active');
+                stepIcon.innerHTML = '⟳';
+                
+                // Marquer les étapes précédentes comme complétées
+                for (let i = 0; i < currentStep; i++) {
+                    const prevStep = document.getElementById(`step${i + 1}`);
+                    prevStep.classList.remove('active');
+                    prevStep.classList.add('completed');
+                    prevStep.innerHTML = '✓';
+                }
+
+                // Mise à jour de la barre de progression
+                const progress = ((currentStep + 1) / steps.length) * 100;
+                progressBar.style.width = `${progress}%`;
+
+                currentStep++;
+                
+                if (currentStep < steps.length) {
+                    setTimeout(updateStep, steps[currentStep - 1].duration);
+                } else {
+                    // Dernière étape
+                    setTimeout(() => {
+                        const lastStep = document.getElementById(`step${steps.length}`);
+                        lastStep.classList.remove('active');
+                        lastStep.classList.add('completed');
+                        lastStep.innerHTML = '✓';
+                        loadingMessage.textContent = "Roadmap générée avec succès !";
+                    }, steps[currentStep - 1].duration);
+                }
+            }
+        };
+
+        updateStep();
+    }
+
+    resetProgress() {
+        const progressBar = document.getElementById('progressBar');
+        const loadingMessage = document.getElementById('loadingMessage');
+        
+        progressBar.style.width = '0%';
+        loadingMessage.textContent = 'Analyse de vos données en cours...';
+        
+        // Reset des icônes d'étapes
+        for (let i = 1; i <= 5; i++) {
+            const stepIcon = document.getElementById(`step${i}`);
+            stepIcon.classList.remove('active', 'completed');
+            stepIcon.innerHTML = i.toString();
         }
     }
 
@@ -646,234 +737,432 @@ function createUniversalTemplate(data, stats) {
     
     return {
         pageSize: 'A4',
-        pageMargins: [40, 60, 40, 60],
+        pageMargins: [50, 70, 50, 70],
         
         content: [
-            // === HEADER UNIVERSEL ===
+            // === EN-TÊTE PROFESSIONNEL ===
             {
                 columns: [
                     {
-                        width: '70%',
+                        width: '60%',
                         stack: [
-                            { text: 'ROADMAP AUTOMATISATION', style: 'mainTitle' },
-                            { text: `${data.company} - Gains concrets garantis`, style: 'subtitle' }
+                            { text: 'AVISTRA', style: 'brandTitle' },
+                            { text: 'Audit Flash Automatisation', style: 'brandSubtitle' },
+                            { text: '', margin: [0, 10, 0, 0] },
+                            { text: 'RAPPORT PERSONNALISÉ', style: 'reportTitle' },
+                            { text: data.company, style: 'companyName' }
                         ]
                     },
                     {
-                        width: '30%',
+                        width: '40%',
                         stack: [
-                            {
-                                table: {
-                                    body: [
-                                        [{ text: 'POWERED BY AI', style: 'aiBadge' }]
-                                    ]
-                                },
-                                layout: {
-                                    fillColor: '#3b82f6',
-                                    hLineWidth: () => 0,
-                                    vLineWidth: () => 0,
-                                    paddingLeft: () => 12,
-                                    paddingRight: () => 12,
-                                    paddingTop: () => 6,
-                                    paddingBottom: () => 6
-                                }
-                            },
-                            { text: `Rapport ${date}`, style: 'dateText', margin: [0, 5, 0, 0] }
-                        ]
+                            { text: 'Powered by AI', style: 'aiBadge', margin: [0, 0, 0, 15] },
+                            { text: `Généré le ${date}`, style: 'dateText' },
+                            { text: `Secteur : ${sectorName}`, style: 'sectorText' }
+                        ],
+                        alignment: 'right'
                     }
                 ],
-                margin: [0, 0, 0, 30]
+                margin: [0, 0, 0, 40]
             },
             
-            // === URGENCE UNIVERSELLE ===
+            // === BLOC 1 : DIAGNOSTIC EXPRESS ===
             {
+                style: 'sectionBlock',
                 table: {
                     widths: ['*'],
-                    body: [
-                        [{
-                            stack: [
-                                { text: '⚠️ PERTE DE PRODUCTIVITÉ DÉTECTÉE', style: 'urgencyTitle' },
-                                { text: `Votre secteur ${sectorName} perd en moyenne 15-25h/semaine en tâches répétitives`, style: 'urgencyText' },
-                                { text: 'Cette roadmap vous donne 6-12 mois d\'avance concurrentielle', style: 'urgencyBenefit' }
-                            ]
-                        }]
-                    ]
+                    body: [[{
+                        stack: [
+                            { text: '1. DIAGNOSTIC EXPRESS', style: 'blockTitle' },
+                            { 
+                                text: `Problème identifié : Votre secteur ${sectorName} perd en moyenne 15-25h/semaine sur des processus manuels répétitifs, soit une perte de productivité estimée à ${Math.round(roi * 0.3 / 1000)}k€ annuels.`,
+                                style: 'problemText'
+                            }
+                        ]
+                    }]]
                 },
                 layout: {
-                    fillColor: '#fef3c7',
+                    fillColor: '#f8fafc',
                     hLineWidth: () => 0,
                     vLineWidth: () => 3,
-                    vLineColor: () => '#f59e0b',
+                    vLineColor: () => '#e2e8f0',
                     paddingLeft: () => 25,
                     paddingRight: () => 25,
-                    paddingTop: () => 15,
-                    paddingBottom: () => 15
+                    paddingTop: () => 20,
+                    paddingBottom: () => 20
                 },
-                margin: [0, 0, 0, 30]
+                margin: [0, 0, 0, 25]
             },
             
-            // === 3 KPI CENTRAUX UNIVERSELS ===
+            // === BLOC 2 : QUICK WINS ===
+            {
+                style: 'sectionBlock',
+                table: {
+                    widths: ['*'],
+                    body: [[{
+                        stack: [
+                            { text: '2. QUICK WINS (0-3 mois)', style: 'blockTitle' },
+                            {
+                                columns: [
+                                    {
+                                        width: '50%',
+                                        stack: [
+                                            { text: 'Action immédiate #1', style: 'actionTitle' },
+                                            { text: 'Automatisation de la gestion emails avec filtres intelligents (Zapier + Gmail). Gain estimé : 5h/semaine.', style: 'actionDesc' }
+                                        ]
+                                    },
+                                    {
+                                        width: '50%',
+                                        stack: [
+                                            { text: 'Action immédiate #2', style: 'actionTitle' },
+                                            { text: 'Mise en place d\'un CRM simple (HubSpot gratuit) pour centraliser les contacts. Gain : 3h/semaine.', style: 'actionDesc' }
+                                        ]
+                                    }
+                                ],
+                                columnGap: 20
+                            }
+                        ]
+                    }]]
+                },
+                layout: {
+                    fillColor: '#f8fafc',
+                    hLineWidth: () => 0,
+                    vLineWidth: () => 3,
+                    vLineColor: () => '#e2e8f0',
+                    paddingLeft: () => 25,
+                    paddingRight: () => 25,
+                    paddingTop: () => 20,
+                    paddingBottom: () => 20
+                },
+                margin: [0, 0, 0, 25]
+            },
+            
+            // === BLOC 3 : PROJETS MOYEN TERME ===
+            {
+                style: 'sectionBlock',
+                table: {
+                    widths: ['*'],
+                    body: [[{
+                        stack: [
+                            { text: '3. PROJETS MOYEN TERME (3-6 mois)', style: 'blockTitle' },
+                            { text: 'Intégration CRM → Outils comptables', style: 'actionTitle' },
+                            { text: 'Connexion automatique entre votre CRM et votre logiciel de facturation pour une coordination optimale des équipes.', style: 'actionDesc' },
+                            { text: '', margin: [0, 8, 0, 0] },
+                            { text: 'Timeline : CRM (mois 1) → Formation équipe (mois 2) → Intégration facturation (mois 3-4)', style: 'timelineText' }
+                        ]
+                    }]]
+                },
+                layout: {
+                    fillColor: '#f8fafc',
+                    hLineWidth: () => 0,
+                    vLineWidth: () => 3,
+                    vLineColor: () => '#e2e8f0',
+                    paddingLeft: () => 25,
+                    paddingRight: () => 25,
+                    paddingTop: () => 20,
+                    paddingBottom: () => 20
+                },
+                margin: [0, 0, 0, 25]
+            },
+            
+            // === BLOC 4 : VISION LONG TERME ===
+            {
+                style: 'sectionBlock',
+                table: {
+                    widths: ['*'],
+                    body: [[{
+                        stack: [
+                            { text: '4. VISION LONG TERME (6-12 mois)', style: 'blockTitle' },
+                            { text: 'Vers un écosystème digital complet', style: 'visionTitle' },
+                            { text: 'Déploiement d\'un workflow intégré : Prospection → CRM → Facturation → Reporting, avec tableaux de bord en temps réel.', style: 'actionDesc' }
+                        ]
+                    }]]
+                },
+                layout: {
+                    fillColor: '#f8fafc',
+                    hLineWidth: () => 0,
+                    vLineWidth: () => 3,
+                    vLineColor: () => '#e2e8f0',
+                    paddingLeft: () => 25,
+                    paddingRight: () => 25,
+                    paddingTop: () => 20,
+                    paddingBottom: () => 20
+                },
+                margin: [0, 0, 0, 25]
+            },
+            
+            // === BLOC 5 : ROI ESTIMÉ (3 CARTES VISUELLES) ===
             {
                 columns: [
                     {
                         width: '33%',
+                        style: 'kpiCard',
                         table: {
                             body: [[{
                                 stack: [
-                                    { text: '⏱️', style: 'kpiIcon' },
-                                    { text: `${savings}h`, style: 'kpiNumber', color: '#10b981' },
-                                    { text: 'ÉCONOMISÉES', style: 'kpiUnit' },
-                                    { text: 'Chaque mois', style: 'kpiLabel' }
+                                    { text: `${savings}h`, style: 'kpiNumber' },
+                                    { text: 'économisées', style: 'kpiLabel' },
+                                    { text: 'par mois', style: 'kpiPeriod' }
                                 ],
                                 alignment: 'center'
                             }]]
                         },
                         layout: {
-                            fillColor: '#ecfdf5',
-                            hLineWidth: () => 2,
-                            vLineWidth: () => 2,
+                            fillColor: '#ffffff',
+                            hLineWidth: () => 1,
+                            vLineWidth: () => 1,
                             hLineColor: () => '#10b981',
                             vLineColor: () => '#10b981',
                             paddingLeft: () => 20,
                             paddingRight: () => 20,
-                            paddingTop: () => 20,
-                            paddingBottom: () => 20
+                            paddingTop: () => 25,
+                            paddingBottom: () => 25
                         }
                     },
                     {
                         width: '33%',
+                        style: 'kpiCard',
                         table: {
                             body: [[{
                                 stack: [
-                                    { text: '💶', style: 'kpiIcon' },
-                                    { text: `${Math.round(roi/1000)}k€`, style: 'kpiNumber', color: '#3b82f6' },
-                                    { text: 'DE GAINS', style: 'kpiUnit' },
-                                    { text: 'La première année', style: 'kpiLabel' }
+                                    { text: `${Math.round(roi/1000)}k€`, style: 'kpiNumber' },
+                                    { text: 'de gains', style: 'kpiLabel' },
+                                    { text: 'par an', style: 'kpiPeriod' }
                                 ],
                                 alignment: 'center'
                             }]]
                         },
                         layout: {
-                            fillColor: '#eff6ff',
-                            hLineWidth: () => 2,
-                            vLineWidth: () => 2,
+                            fillColor: '#ffffff',
+                            hLineWidth: () => 1,
+                            vLineWidth: () => 1,
                             hLineColor: () => '#3b82f6',
                             vLineColor: () => '#3b82f6',
                             paddingLeft: () => 20,
                             paddingRight: () => 20,
-                            paddingTop: () => 20,
-                            paddingBottom: () => 20
+                            paddingTop: () => 25,
+                            paddingBottom: () => 25
                         }
                     },
                     {
                         width: '33%',
+                        style: 'kpiCard',
                         table: {
                             body: [[{
                                 stack: [
-                                    { text: '🎯', style: 'kpiIcon' },
-                                    { text: '6 mois', style: 'kpiNumber', color: '#8b5cf6' },
-                                    { text: 'RETOUR', style: 'kpiUnit' },
-                                    { text: 'Investissement', style: 'kpiLabel' }
+                                    { text: '6 mois', style: 'kpiNumber' },
+                                    { text: 'retour', style: 'kpiLabel' },
+                                    { text: 'investissement', style: 'kpiPeriod' }
                                 ],
                                 alignment: 'center'
                             }]]
                         },
                         layout: {
-                            fillColor: '#faf5ff',
-                            hLineWidth: () => 2,
-                            vLineWidth: () => 2,
-                            hLineColor: () => '#8b5cf6',
-                            vLineColor: () => '#8b5cf6',
+                            fillColor: '#ffffff',
+                            hLineWidth: () => 1,
+                            vLineWidth: () => 1,
+                            hLineColor: () => '#64748b',
+                            vLineColor: () => '#64748b',
                             paddingLeft: () => 20,
                             paddingRight: () => 20,
-                            paddingTop: () => 20,
-                            paddingBottom: () => 20
+                            paddingTop: () => 25,
+                            paddingBottom: () => 25
                         }
                     }
                 ],
-                columnGap: 12,
+                columnGap: 15,
                 margin: [0, 0, 0, 30]
             },
             
-            // === ROADMAP GÉNÉRÉE ===
-            ...generateRoadmapContent(data),
-            
-            // === CTA FINAL ===
+            // === BLOC 6 : CALL TO ACTION ===
             {
                 table: {
-                    widths: ['60%', '40%'],
-                    body: [
-                        [
+                    widths: ['*'],
+                    body: [[{
+                        stack: [
+                            { text: 'AUDIT GRATUIT 30 MIN – RÉPONSE SOUS 24H', style: 'ctaTitle' },
+                            { text: '', margin: [0, 8, 0, 0] },
                             {
-                                stack: [
-                                    { text: '🎯 AUDIT GRATUIT 30 MIN', style: 'ctaTitle' },
-                                    { text: '✓ Analyse de votre situation actuelle', style: 'ctaItem' },
-                                    { text: '✓ Estimation précise des gains', style: 'ctaItem' },
-                                    { text: '✓ Plan de mise en œuvre personnalisé', style: 'ctaItem' },
-                                    { text: '✓ Démonstration sur vos données', style: 'ctaItem' }
-                                ]
-                            },
-                            {
-                                stack: [
-                                    { text: '📞 RÉPONSE SOUS 24H', style: 'contactTitle' },
-                                    { text: 'Antoine Verdure', style: 'contactName' },
-                                    { text: 'Expert Automatisation', style: 'contactRole' },
-                                    { text: '', margin: [0, 8, 0, 0] },
-                                    { text: '📧 contact@equilibretech.com', style: 'contactInfo' },
-                                    { text: '🔗 linkedin.com/in/antoine-verdure', style: 'contactInfo' }
-                                ]
+                                columns: [
+                                    {
+                                        width: '50%',
+                                        stack: [
+                                            { text: 'Votre audit comprend :', style: 'ctaSubtitle' },
+                                            { text: '• Analyse détaillée de vos processus', style: 'ctaItem' },
+                                            { text: '• Estimation précise des gains', style: 'ctaItem' },
+                                            { text: '• Plan de mise en œuvre sur-mesure', style: 'ctaItem' },
+                                            { text: '• Démonstration en live', style: 'ctaItem' }
+                                        ]
+                                    },
+                                    {
+                                        width: '50%',
+                                        stack: [
+                                            { text: 'Réservez votre créneau', style: 'ctaButton' },
+                                            { text: '', margin: [0, 10, 0, 0] },
+                                            { text: 'contact@equilibretech.com', style: 'contactMain' },
+                                            { text: 'linkedin.com/in/equilibretech', style: 'contactSecondary' }
+                                        ],
+                                        alignment: 'center'
+                                    }
+                                ],
+                                columnGap: 20
                             }
                         ]
-                    ]
+                    }]]
                 },
                 layout: {
-                    fillColor: '#f1f5f9',
-                    hLineWidth: () => 1,
-                    vLineWidth: () => 1,
-                    hLineColor: () => '#d1d5db',
-                    vLineColor: () => '#d1d5db',
-                    paddingLeft: () => 20,
-                    paddingRight: () => 20,
-                    paddingTop: () => 20,
-                    paddingBottom: () => 20
-                }
+                    fillColor: '#1e293b',
+                    hLineWidth: () => 0,
+                    vLineWidth: () => 0,
+                    paddingLeft: () => 30,
+                    paddingRight: () => 30,
+                    paddingTop: () => 25,
+                    paddingBottom: () => 25
+                },
+                margin: [0, 10, 0, 0]
             }
         ],
         
-        // === STYLES UNIVERSELS ===
+        // === STYLES PROFESSIONNELS ÉPURÉS ===
         styles: {
-            // Headers
-            mainTitle: { fontSize: 24, bold: true, color: '#1e293b' },
-            subtitle: { fontSize: 16, color: '#3b82f6', margin: [0, 4, 0, 0] },
-            aiBadge: { fontSize: 8, bold: true, color: 'white', alignment: 'center' },
-            dateText: { fontSize: 8, color: '#9ca3af', alignment: 'right' },
+            // Branding
+            brandTitle: { 
+                fontSize: 20, 
+                bold: true, 
+                color: '#1e293b',
+                letterSpacing: 2
+            },
+            brandSubtitle: { 
+                fontSize: 10, 
+                color: '#64748b',
+                margin: [0, 0, 0, 0] 
+            },
+            reportTitle: { 
+                fontSize: 16, 
+                bold: true, 
+                color: '#3b82f6',
+                margin: [0, 0, 0, 5] 
+            },
+            companyName: { 
+                fontSize: 14, 
+                bold: true, 
+                color: '#1e293b' 
+            },
+            aiBadge: { 
+                fontSize: 8, 
+                color: '#64748b',
+                italics: true 
+            },
+            dateText: { 
+                fontSize: 9, 
+                color: '#64748b' 
+            },
+            sectorText: { 
+                fontSize: 9, 
+                color: '#64748b' 
+            },
             
-            // Urgence
-            urgencyTitle: { fontSize: 13, bold: true, color: '#f59e0b', margin: [0, 0, 0, 5] },
-            urgencyText: { fontSize: 10, color: '#1e293b', margin: [0, 0, 0, 5] },
-            urgencyBenefit: { fontSize: 9, bold: true, color: '#10b981' },
+            // Blocs de section
+            sectionBlock: { 
+                margin: [0, 0, 0, 15] 
+            },
+            blockTitle: { 
+                fontSize: 13, 
+                bold: true, 
+                color: '#1e293b',
+                margin: [0, 0, 0, 12] 
+            },
+            problemText: { 
+                fontSize: 11, 
+                color: '#374151',
+                lineHeight: 1.4,
+                italics: true 
+            },
             
-            // KPI
-            kpiIcon: { fontSize: 20, alignment: 'center', margin: [0, 0, 0, 8] },
-            kpiNumber: { fontSize: 28, bold: true, alignment: 'center', margin: [0, 0, 0, 4] },
-            kpiUnit: { fontSize: 8, bold: true, color: '#6b7280', alignment: 'center', margin: [0, 0, 0, 4] },
-            kpiLabel: { fontSize: 9, color: '#374151', alignment: 'center' },
+            // Actions
+            actionTitle: { 
+                fontSize: 11, 
+                bold: true, 
+                color: '#1e293b',
+                margin: [0, 0, 0, 6] 
+            },
+            actionDesc: { 
+                fontSize: 10, 
+                color: '#374151',
+                lineHeight: 1.3 
+            },
+            timelineText: { 
+                fontSize: 9, 
+                color: '#64748b',
+                italics: true 
+            },
+            visionTitle: { 
+                fontSize: 12, 
+                bold: true, 
+                color: '#3b82f6',
+                margin: [0, 0, 0, 8] 
+            },
             
-            // Sections roadmap
-            sectionTitle: { fontSize: 14, bold: true, color: 'white', margin: [0, 0, 0, 0] },
-            sectionNumber: { fontSize: 10, bold: true, color: 'white' },
-            itemTitle: { fontSize: 11, bold: true, margin: [0, 0, 0, 4] },
-            itemDescription: { fontSize: 10, color: '#374151', lineHeight: 1.3 },
+            // KPI Cards
+            kpiCard: { 
+                margin: [0, 0, 0, 0] 
+            },
+            kpiNumber: { 
+                fontSize: 24, 
+                bold: true, 
+                color: '#1e293b' 
+            },
+            kpiLabel: { 
+                fontSize: 10, 
+                color: '#64748b',
+                margin: [0, 2, 0, 0] 
+            },
+            kpiPeriod: { 
+                fontSize: 8, 
+                color: '#94a3b8' 
+            },
             
             // CTA
-            ctaTitle: { fontSize: 11, bold: true, color: '#10b981', margin: [0, 0, 0, 8] },
-            ctaItem: { fontSize: 8, color: '#374151', margin: [0, 0, 0, 2] },
-            
-            // Contact
-            contactTitle: { fontSize: 9, bold: true, color: '#1e293b', alignment: 'center', margin: [0, 0, 0, 8] },
-            contactName: { fontSize: 10, bold: true, color: '#3b82f6', alignment: 'center', margin: [0, 0, 0, 2] },
-            contactRole: { fontSize: 8, color: '#6b7280', alignment: 'center', margin: [0, 0, 0, 8] },
-            contactInfo: { fontSize: 7, color: '#374151', alignment: 'center', margin: [0, 0, 0, 2] }
+            ctaTitle: { 
+                fontSize: 14, 
+                bold: true, 
+                color: '#ffffff',
+                alignment: 'center',
+                margin: [0, 0, 0, 0] 
+            },
+            ctaSubtitle: { 
+                fontSize: 11, 
+                bold: true, 
+                color: '#e2e8f0',
+                margin: [0, 0, 0, 8] 
+            },
+            ctaItem: { 
+                fontSize: 10, 
+                color: '#cbd5e1',
+                margin: [0, 0, 0, 3] 
+            },
+            ctaButton: { 
+                fontSize: 12, 
+                bold: true, 
+                color: '#ffffff',
+                background: '#3b82f6',
+                alignment: 'center' 
+            },
+            contactMain: { 
+                fontSize: 11, 
+                bold: true, 
+                color: '#ffffff' 
+            },
+            contactSecondary: { 
+                fontSize: 9, 
+                color: '#cbd5e1' 
+            }
+        },
+        
+        // === POLICES PROFESSIONNELLES ===
+        defaultStyle: {
+            font: 'Helvetica',
+            fontSize: 10
         }
     };
 }
