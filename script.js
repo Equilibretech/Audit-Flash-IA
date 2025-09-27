@@ -652,61 +652,82 @@ function generatePDF() {
         const margin = 20;
         let yPosition = margin;
         
-        // Couleurs professionnelles
+        // Couleurs modernes et professionnelles
         const colors = {
-            primary: [15, 23, 42],
-            cyan: [6, 182, 212],
-            green: [16, 185, 129],
-            gray: [75, 85, 99],
-            lightGray: [156, 163, 175],
-            background: [248, 250, 252]
+            primary: [30, 41, 59],      // Slate 700
+            accent: [59, 130, 246],     // Blue 500  
+            success: [34, 197, 94],     // Green 500
+            warning: [251, 146, 60],    // Orange 400
+            purple: [147, 51, 234],     // Purple 600
+            gray: [71, 85, 105],        // Slate 600
+            lightGray: [148, 163, 184], // Slate 400
+            background: [248, 250, 252], // Slate 50
+            white: [255, 255, 255],
+            gradient1: [99, 102, 241],  // Indigo 500
+            gradient2: [168, 85, 247]   // Purple 500
         };
         
-        // ===== PAGE 1: COUVERTURE PROFESSIONNELLE =====
+        // ===== PAGE 1: COUVERTURE MODERNE =====
         
-        // Header avec dégradé simulé
-        doc.setFillColor(...colors.primary);
-        doc.rect(0, 0, 210, 50, 'F');
+        // Header dégradé moderne
+        doc.setFillColor(...colors.gradient1);
+        doc.rect(0, 0, 210, 60, 'F');
+        doc.setFillColor(...colors.gradient2);
+        doc.rect(0, 0, 210, 30, 'F');
         
-        // Badge "Powered by IA"
-        doc.setFillColor(255, 255, 255);
-        doc.rect(150, 10, 50, 15, 'F');
-        doc.setFontSize(8);
-        doc.setTextColor(...colors.cyan);
+        // Badge moderne "AI-Powered"
+        doc.setFillColor(...colors.white);
+        doc.roundedRect(140, 8, 60, 12, 3, 3, 'F');
+        doc.setFontSize(7);
+        doc.setTextColor(...colors.accent);
         doc.setFont('helvetica', 'bold');
-        doc.text('POWERED BY AI', 175, 20, { align: 'center' });
+        doc.text('🤖 AI-POWERED', 170, 16, { align: 'center' });
         
-        // Titre principal
-        doc.setFontSize(20);
-        doc.setTextColor(255, 255, 255);
+        // Titre principal avec style moderne
+        doc.setFontSize(24);
+        doc.setTextColor(...colors.white);
         doc.setFont('helvetica', 'bold');
-        doc.text('ROADMAP D\'AUTOMATISATION', 105, 25, { align: 'center' });
-        
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Analyse personnalisée par Intelligence Artificielle', 105, 35, { align: 'center' });
-        
-        yPosition = 70;
-        
-        // Box entreprise avec style
-        doc.setFillColor(...colors.background);
-        doc.rect(margin, yPosition, 170, 35, 'F');
-        doc.setDrawColor(...colors.cyan);
-        doc.setLineWidth(0.5);
-        doc.rect(margin, yPosition, 170, 35, 'S');
-        
+        doc.text('ROADMAP', 105, 30, { align: 'center' });
         doc.setFontSize(18);
+        doc.text('D\'AUTOMATISATION', 105, 45, { align: 'center' });
+        
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(240, 240, 240);
+        doc.text('Analyse personnalisée par Intelligence Artificielle', 105, 55, { align: 'center' });
+        
+        yPosition = 80;
+        
+        // Card entreprise moderne avec ombre
+        doc.setFillColor(250, 250, 250);
+        doc.roundedRect(margin + 2, yPosition + 2, 170, 40, 5, 5, 'F'); // Ombre
+        doc.setFillColor(...colors.white);
+        doc.roundedRect(margin, yPosition, 170, 40, 5, 5, 'F');
+        doc.setDrawColor(...colors.accent);
+        doc.setLineWidth(0.8);
+        doc.roundedRect(margin, yPosition, 170, 40, 5, 5, 'S');
+        
+        // Icône entreprise
+        doc.setFillColor(...colors.accent);
+        doc.circle(margin + 15, yPosition + 20, 8, 'F');
+        doc.setFontSize(10);
+        doc.setTextColor(...colors.white);
+        doc.setFont('helvetica', 'bold');
+        doc.text('🏢', margin + 12, yPosition + 24);
+        
+        // Nom entreprise
+        doc.setFontSize(20);
         doc.setTextColor(...colors.primary);
         doc.setFont('helvetica', 'bold');
-        doc.text(data.company, margin + 10, yPosition + 15);
+        doc.text(data.company, margin + 30, yPosition + 18);
         
         const date = new Date(data.generatedAt).toLocaleDateString('fr-FR');
-        doc.setFontSize(10);
+        doc.setFontSize(9);
         doc.setTextColor(...colors.gray);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Rapport généré le ${date}`, margin + 10, yPosition + 25);
+        doc.text(`📅 Généré le ${date}`, margin + 30, yPosition + 30);
         
-        yPosition += 55;
+        yPosition += 60;
         
         // Stats avec design professionnel
         const formData = window.auditApp.collectFormData();
@@ -716,171 +737,220 @@ function generatePDF() {
         const roi = Math.round(savings * 38 * 12);
         const automationScore = Math.round(55 + Math.random() * 30);
         
-        // Titre synthèse
-        doc.setFontSize(14);
-        doc.setTextColor(...colors.primary);
-        doc.setFont('helvetica', 'bold');
-        doc.text('SYNTHÈSE EXÉCUTIVE', margin, yPosition);
-        yPosition += 20;
-        
-        // Stats avec icônes simples SANS caractères spéciaux
+        // Stats modernes avec design card
         const stats = [
-            { icon: '', label: 'Heures économisées/mois', value: `${savings}h`, color: colors.green },
-            { icon: '', label: 'ROI annuel estimé', value: `${roi.toLocaleString('fr-FR').replace(/\s/g, ' ')}€`, color: colors.cyan },
-            { icon: '', label: 'Potentiel d\'automatisation', value: `${automationScore}%`, color: colors.primary }
+            { label: 'Heures économisées/mois', value: `${savings}h`, color: colors.success, bgColor: [220, 252, 231] },
+            { label: 'ROI annuel estimé', value: `${roi.toLocaleString('fr-FR').replace(/\s/g, ' ')}€`, color: colors.accent, bgColor: [219, 234, 254] },
+            { label: 'Potentiel d\'automatisation', value: `${automationScore}%`, color: colors.purple, bgColor: [237, 233, 254] }
         ];
         
+        // Titre section avec style moderne
+        doc.setFillColor(...colors.primary);
+        doc.roundedRect(margin, yPosition, 170, 20, 3, 3, 'F');
+        doc.setFontSize(14);
+        doc.setTextColor(...colors.white);
+        doc.setFont('helvetica', 'bold');
+        doc.text('📊 SYNTHÈSE EXÉCUTIVE', margin + 15, yPosition + 13);
+        yPosition += 35;
+        
         stats.forEach((stat, index) => {
-            // Box pour chaque stat
-            doc.setFillColor(255, 255, 255);
-            doc.rect(margin, yPosition, 170, 20, 'F');
-            doc.setDrawColor(...stat.color);
-            doc.setLineWidth(0.3);
-            doc.rect(margin, yPosition, 170, 20, 'S');
+            const cardWidth = 170;
+            const cardHeight = 35;
             
-            // Barre de couleur à gauche
+            // Ombre de la card
+            doc.setFillColor(240, 240, 240);
+            doc.roundedRect(margin + 1, yPosition + 1, cardWidth, cardHeight, 4, 4, 'F');
+            
+            // Background de la card
+            doc.setFillColor(...stat.bgColor);
+            doc.roundedRect(margin, yPosition, cardWidth, cardHeight, 4, 4, 'F');
+            
+            // Bordure colorée à gauche
             doc.setFillColor(...stat.color);
-            doc.rect(margin, yPosition, 3, 20, 'F');
+            doc.roundedRect(margin, yPosition, 6, cardHeight, 4, 4, 'F');
             
-            // Pas d'icône pour éviter les problèmes d'encodage
+            // Icône dans un cercle
+            doc.setFillColor(...stat.color);
+            doc.circle(margin + 20, yPosition + 17, 10, 'F');
+            doc.setFillColor(...colors.white);
+            doc.circle(margin + 20, yPosition + 17, 8, 'F');
+            doc.setFillColor(...stat.color);
+            doc.circle(margin + 20, yPosition + 17, 6, 'F');
             
             // Label
             doc.setFontSize(10);
             doc.setTextColor(...colors.gray);
             doc.setFont('helvetica', 'normal');
-            doc.text(stat.label, margin + 10, yPosition + 8);
+            doc.text(stat.label, margin + 35, yPosition + 12);
             
-            // Valeur
-            doc.setFontSize(12);
+            // Valeur grande
+            doc.setFontSize(18);
             doc.setTextColor(...stat.color);
             doc.setFont('helvetica', 'bold');
-            doc.text(stat.value, margin + 10, yPosition + 16);
+            doc.text(stat.value, margin + 35, yPosition + 25);
             
-            yPosition += 25;
+            yPosition += 45;
         });
         
         yPosition += 20;
         
-        // Section contact stylée
-        doc.setFillColor(...colors.primary);
-        doc.rect(margin, yPosition, 170, 50, 'F');
+        // Section contact moderne avec dégradé
+        doc.setFillColor(...colors.gradient1);
+        doc.roundedRect(margin, yPosition, 170, 60, 8, 8, 'F');
+        doc.setFillColor(...colors.gradient2);
+        doc.roundedRect(margin, yPosition, 170, 30, 8, 8, 'F');
         
+        // Avatar expert
+        doc.setFillColor(...colors.white);
+        doc.circle(margin + 25, yPosition + 30, 15, 'F');
+        doc.setFillColor(...colors.accent);
+        doc.circle(margin + 25, yPosition + 30, 12, 'F');
         doc.setFontSize(12);
-        doc.setTextColor(255, 255, 255);
+        doc.setTextColor(...colors.white);
         doc.setFont('helvetica', 'bold');
-        doc.text('VOTRE EXPERT EN AUTOMATISATION', margin + 10, yPosition + 15);
+        doc.text('👨‍💼', margin + 20, yPosition + 35);
         
-        doc.setFontSize(10);
-        doc.setTextColor(...colors.cyan);
+        // Titre contact
+        doc.setFontSize(13);
+        doc.setTextColor(...colors.white);
         doc.setFont('helvetica', 'bold');
-        doc.text('Antoine - Equilibre Tech', margin + 10, yPosition + 25);
+        doc.text('VOTRE EXPERT EN AUTOMATISATION', margin + 45, yPosition + 20);
         
-        doc.setFontSize(9);
-        doc.setTextColor(255, 255, 255);
+        // Nom expert
+        doc.setFontSize(11);
+        doc.setTextColor(...colors.white);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Antoine - Equilibre Tech', margin + 45, yPosition + 32);
+        
+        // Infos contact
+        doc.setFontSize(8);
+        doc.setTextColor(240, 240, 240);
         doc.setFont('helvetica', 'normal');
-        doc.text('Spécialiste en automatisation et transformation digitale', margin + 10, yPosition + 33);
-        doc.text('Email: contact@equilibretech.com', margin + 10, yPosition + 38);
-        doc.text('LinkedIn: linkedin.com/in/equilibretech', margin + 10, yPosition + 46);
+        doc.text('📧 contact@equilibretech.com', margin + 45, yPosition + 42);
+        doc.text('💼 linkedin.com/in/equilibretech', margin + 45, yPosition + 50);
+        doc.text('🎯 Spécialiste transformation digitale', margin + 45, yPosition + 58);
         
-        // ===== PAGE 2: PLAN D'ACTION PROFESSIONNEL =====
+        // ===== PAGE 2: PLAN D'ACTION MODERNE =====
         doc.addPage();
         yPosition = margin;
         
-        // Header page 2
-        doc.setFillColor(...colors.primary);
-        doc.rect(0, 0, 210, 30, 'F');
+        // Header moderne page 2
+        doc.setFillColor(...colors.gradient1);
+        doc.rect(0, 0, 210, 40, 'F');
+        doc.setFillColor(...colors.gradient2);
+        doc.rect(0, 0, 210, 20, 'F');
         
-        doc.setFontSize(16);
-        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(18);
+        doc.setTextColor(...colors.white);
         doc.setFont('helvetica', 'bold');
-        doc.text('PLAN D\'ACTION PERSONNALISÉ', 105, 20, { align: 'center' });
+        doc.text('🚀 PLAN D\'ACTION PERSONNALISÉ', 105, 25, { align: 'center' });
         
-        yPosition = 50;
+        yPosition = 60;
         
         // Utiliser la structure JSON si disponible, sinon fallback HTML
         if (data.isJSON && data.roadmap && data.roadmap.sections) {
             // NOUVEAU: Traitement direct du JSON structuré
             const sections = data.roadmap.sections;
             let sectionCount = 0;
-            const sectionIcons = ['1', '2', '3', '4', '5'];
-            const sectionColors = [colors.primary, colors.green, colors.cyan, colors.primary, colors.green];
+            const sectionIcons = ['🔍', '⚡', '🚀', '🎯', '💰'];
+            const sectionColors = [colors.accent, colors.success, colors.warning, colors.purple, colors.gradient1];
             
             sections.forEach(section => {
-                if (yPosition > 240) {
+                if (yPosition > 220) {
                     doc.addPage();
-                    yPosition = margin + 20;
+                    yPosition = margin + 30;
                 }
                 
-                const currentColor = sectionColors[sectionCount] || colors.cyan;
-                const currentIcon = sectionIcons[sectionCount] || (sectionCount + 1).toString();
+                const currentColor = sectionColors[sectionCount] || colors.accent;
+                const currentIcon = sectionIcons[sectionCount] || '📋';
                 
-                // Background coloré pour le titre
-                doc.setFillColor(...currentColor, 0.1);
-                doc.rect(margin, yPosition - 5, 170, 25, 'F');
+                // Card moderne pour chaque section
+                doc.setFillColor(245, 245, 245);
+                doc.roundedRect(margin + 2, yPosition + 2, 170, 35, 8, 8, 'F'); // Ombre
                 
-                // Bordure gauche colorée
+                doc.setFillColor(...colors.white);
+                doc.roundedRect(margin, yPosition, 170, 35, 8, 8, 'F');
+                
+                // Gradient header de section
                 doc.setFillColor(...currentColor);
-                doc.rect(margin, yPosition - 5, 4, 25, 'F');
+                doc.roundedRect(margin, yPosition, 170, 25, 8, 8, 'F');
+                doc.setFillColor(...colors.white);
+                doc.roundedRect(margin, yPosition + 20, 170, 15, 0, 0, 'F');
                 
-                // Numéro dans un cercle
+                // Badge numéro avec icône
+                doc.setFillColor(...colors.white);
+                doc.circle(margin + 20, yPosition + 12, 12, 'F');
                 doc.setFillColor(...currentColor);
-                doc.circle(margin + 15, yPosition + 8, 8, 'F');
+                doc.circle(margin + 20, yPosition + 12, 10, 'F');
+                
+                doc.setFontSize(8);
+                doc.setTextColor(...colors.white);
+                doc.setFont('helvetica', 'bold');
+                doc.text((sectionCount + 1).toString(), margin + 17, yPosition + 15);
+                
+                // Icône de section
+                doc.setFontSize(10);
+                doc.text(currentIcon, margin + 38, yPosition + 15);
+                
+                // Titre de section moderne
                 doc.setFontSize(12);
-                doc.setTextColor(255, 255, 255);
+                doc.setTextColor(...colors.white);
                 doc.setFont('helvetica', 'bold');
-                doc.text(currentIcon, margin + 12, yPosition + 12);
-                
-                // Titre de section
-                doc.setFontSize(13);
-                doc.setTextColor(...currentColor);
-                doc.setFont('helvetica', 'bold');
-                doc.text(section.title.toUpperCase(), margin + 30, yPosition + 12);
+                doc.text(section.title, margin + 50, yPosition + 15);
                 
                 sectionCount++;
-                yPosition += 30;
+                yPosition += 45;
                 
-                // Items de la section
+                // Items de la section avec style moderne
                 if (section.items && Array.isArray(section.items)) {
-                    section.items.forEach(item => {
-                        if (yPosition > 260) {
+                    section.items.forEach((item, itemIndex) => {
+                        if (yPosition > 240) {
                             doc.addPage();
-                            yPosition = margin + 10;
+                            yPosition = margin + 20;
                         }
                         
-                        // Puce colorée
-                        doc.setFillColor(...currentColor);
-                        doc.circle(margin + 8, yPosition + 2, 2, 'F');
+                        // Card pour chaque item
+                        const itemHeight = 25 + Math.ceil(item.description.length / 70) * 8;
                         
-                        // Titre de l'item en gras
+                        doc.setFillColor(250, 250, 250);
+                        doc.roundedRect(margin + 12, yPosition + 1, 156, itemHeight, 4, 4, 'F'); // Ombre
+                        
+                        doc.setFillColor(...colors.white);
+                        doc.roundedRect(margin + 10, yPosition, 156, itemHeight, 4, 4, 'F');
+                        
+                        // Indicateur coloré
+                        doc.setFillColor(...currentColor);
+                        doc.roundedRect(margin + 10, yPosition, 4, itemHeight, 4, 4, 'F');
+                        
+                        // Bullet point moderne
+                        doc.setFillColor(...currentColor);
+                        doc.circle(margin + 20, yPosition + 8, 3, 'F');
+                        
+                        // Titre de l'item
                         doc.setFontSize(10);
                         doc.setTextColor(...currentColor);
                         doc.setFont('helvetica', 'bold');
-                        const titleLines = doc.splitTextToSize(item.title, 155);
+                        const titleLines = doc.splitTextToSize(item.title, 140);
+                        let currentY = yPosition + 8;
                         titleLines.forEach(line => {
-                            doc.text(line, margin + 15, yPosition + 5);
-                            yPosition += 10;
+                            doc.text(line, margin + 28, currentY);
+                            currentY += 10;
                         });
-                        
-                        yPosition += 2;
                         
                         // Description de l'item
                         doc.setFontSize(9);
                         doc.setTextColor(...colors.gray);
                         doc.setFont('helvetica', 'normal');
-                        const descLines = doc.splitTextToSize(item.description, 155);
+                        const descLines = doc.splitTextToSize(item.description, 140);
                         descLines.forEach(line => {
-                            if (yPosition > 270) {
-                                doc.addPage();
-                                yPosition = margin + 10;
-                            }
-                            doc.text(line, margin + 15, yPosition);
-                            yPosition += 9;
+                            doc.text(line, margin + 28, currentY);
+                            currentY += 8;
                         });
                         
-                        yPosition += 12;
+                        yPosition += itemHeight + 8;
                     });
                 }
-                yPosition += 10;
+                yPosition += 15;
             });
         } else if (data.roadmap && data.roadmap.trim()) {
             // FALLBACK: Parser HTML comme avant
