@@ -612,8 +612,8 @@ function generateProfessionalPDF() {
         const roi = Math.round(savings * 38 * 12);
         const automationScore = Math.round(55 + Math.random() * 30);
         
-        // Template PDFMake professionnel
-        const docDefinition = createProfessionalTemplate(data, {
+        // Template PDF universel
+        const docDefinition = createUniversalTemplate(data, {
             savings,
             roi,
             automationScore,
@@ -621,21 +621,354 @@ function generateProfessionalPDF() {
         });
         
         // Générer le PDF
-        const filename = `Roadmap-Pro-${data.company.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().slice(0,10)}.pdf`;
+        const filename = `Roadmap-${data.company.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().slice(0,10)}.pdf`;
         pdfMake.createPdf(docDefinition).download(filename);
         
         // Analytics
         if (typeof gtag !== 'undefined') {
             gtag('event', 'download', {
                 event_category: 'engagement',
-                event_label: 'roadmap_pdf_professional_pdfmake'
+                event_label: 'roadmap_pdf_universal'
             });
         }
         
     } catch (error) {
-        console.error('Erreur PDF professionnel:', error);
-        alert('Erreur lors de la génération du PDF professionnel');
+        console.error('Erreur PDF universel:', error);
+        alert('Erreur lors de la génération du PDF');
     }
+}
+
+// === TEMPLATE PDF UNIVERSEL ===
+function createUniversalTemplate(data, stats) {
+    const { savings, roi, automationScore, formData } = stats;
+    const date = new Date(data.generatedAt).toLocaleDateString('fr-FR');
+    const sectorName = getSectorName(formData.sector);
+    
+    return {
+        pageSize: 'A4',
+        pageMargins: [40, 60, 40, 60],
+        
+        content: [
+            // === HEADER UNIVERSEL ===
+            {
+                columns: [
+                    {
+                        width: '70%',
+                        stack: [
+                            { text: 'ROADMAP AUTOMATISATION', style: 'mainTitle' },
+                            { text: `${data.company} - Gains concrets garantis`, style: 'subtitle' }
+                        ]
+                    },
+                    {
+                        width: '30%',
+                        stack: [
+                            {
+                                table: {
+                                    body: [
+                                        [{ text: 'POWERED BY AI', style: 'aiBadge' }]
+                                    ]
+                                },
+                                layout: {
+                                    fillColor: '#3b82f6',
+                                    hLineWidth: () => 0,
+                                    vLineWidth: () => 0,
+                                    paddingLeft: () => 12,
+                                    paddingRight: () => 12,
+                                    paddingTop: () => 6,
+                                    paddingBottom: () => 6
+                                }
+                            },
+                            { text: `Rapport ${date}`, style: 'dateText', margin: [0, 5, 0, 0] }
+                        ]
+                    }
+                ],
+                margin: [0, 0, 0, 30]
+            },
+            
+            // === URGENCE UNIVERSELLE ===
+            {
+                table: {
+                    widths: ['*'],
+                    body: [
+                        [{
+                            stack: [
+                                { text: '⚠️ PERTE DE PRODUCTIVITÉ DÉTECTÉE', style: 'urgencyTitle' },
+                                { text: `Votre secteur ${sectorName} perd en moyenne 15-25h/semaine en tâches répétitives`, style: 'urgencyText' },
+                                { text: 'Cette roadmap vous donne 6-12 mois d\'avance concurrentielle', style: 'urgencyBenefit' }
+                            ]
+                        }]
+                    ]
+                },
+                layout: {
+                    fillColor: '#fef3c7',
+                    hLineWidth: () => 0,
+                    vLineWidth: () => 3,
+                    vLineColor: () => '#f59e0b',
+                    paddingLeft: () => 25,
+                    paddingRight: () => 25,
+                    paddingTop: () => 15,
+                    paddingBottom: () => 15
+                },
+                margin: [0, 0, 0, 30]
+            },
+            
+            // === 3 KPI CENTRAUX UNIVERSELS ===
+            {
+                columns: [
+                    {
+                        width: '33%',
+                        table: {
+                            body: [[{
+                                stack: [
+                                    { text: '⏱️', style: 'kpiIcon' },
+                                    { text: `${savings}h`, style: 'kpiNumber', color: '#10b981' },
+                                    { text: 'ÉCONOMISÉES', style: 'kpiUnit' },
+                                    { text: 'Chaque mois', style: 'kpiLabel' }
+                                ],
+                                alignment: 'center'
+                            }]]
+                        },
+                        layout: {
+                            fillColor: '#ecfdf5',
+                            hLineWidth: () => 2,
+                            vLineWidth: () => 2,
+                            hLineColor: () => '#10b981',
+                            vLineColor: () => '#10b981',
+                            paddingLeft: () => 20,
+                            paddingRight: () => 20,
+                            paddingTop: () => 20,
+                            paddingBottom: () => 20
+                        }
+                    },
+                    {
+                        width: '33%',
+                        table: {
+                            body: [[{
+                                stack: [
+                                    { text: '💶', style: 'kpiIcon' },
+                                    { text: `${Math.round(roi/1000)}k€`, style: 'kpiNumber', color: '#3b82f6' },
+                                    { text: 'DE GAINS', style: 'kpiUnit' },
+                                    { text: 'La première année', style: 'kpiLabel' }
+                                ],
+                                alignment: 'center'
+                            }]]
+                        },
+                        layout: {
+                            fillColor: '#eff6ff',
+                            hLineWidth: () => 2,
+                            vLineWidth: () => 2,
+                            hLineColor: () => '#3b82f6',
+                            vLineColor: () => '#3b82f6',
+                            paddingLeft: () => 20,
+                            paddingRight: () => 20,
+                            paddingTop: () => 20,
+                            paddingBottom: () => 20
+                        }
+                    },
+                    {
+                        width: '33%',
+                        table: {
+                            body: [[{
+                                stack: [
+                                    { text: '🎯', style: 'kpiIcon' },
+                                    { text: '6 mois', style: 'kpiNumber', color: '#8b5cf6' },
+                                    { text: 'RETOUR', style: 'kpiUnit' },
+                                    { text: 'Investissement', style: 'kpiLabel' }
+                                ],
+                                alignment: 'center'
+                            }]]
+                        },
+                        layout: {
+                            fillColor: '#faf5ff',
+                            hLineWidth: () => 2,
+                            vLineWidth: () => 2,
+                            hLineColor: () => '#8b5cf6',
+                            vLineColor: () => '#8b5cf6',
+                            paddingLeft: () => 20,
+                            paddingRight: () => 20,
+                            paddingTop: () => 20,
+                            paddingBottom: () => 20
+                        }
+                    }
+                ],
+                columnGap: 12,
+                margin: [0, 0, 0, 30]
+            },
+            
+            // === ROADMAP GÉNÉRÉE ===
+            ...generateRoadmapContent(data),
+            
+            // === CTA FINAL ===
+            {
+                table: {
+                    widths: ['60%', '40%'],
+                    body: [
+                        [
+                            {
+                                stack: [
+                                    { text: '🎯 AUDIT GRATUIT 30 MIN', style: 'ctaTitle' },
+                                    { text: '✓ Analyse de votre situation actuelle', style: 'ctaItem' },
+                                    { text: '✓ Estimation précise des gains', style: 'ctaItem' },
+                                    { text: '✓ Plan de mise en œuvre personnalisé', style: 'ctaItem' },
+                                    { text: '✓ Démonstration sur vos données', style: 'ctaItem' }
+                                ]
+                            },
+                            {
+                                stack: [
+                                    { text: '📞 RÉPONSE SOUS 24H', style: 'contactTitle' },
+                                    { text: 'Antoine Verdure', style: 'contactName' },
+                                    { text: 'Expert Automatisation', style: 'contactRole' },
+                                    { text: '', margin: [0, 8, 0, 0] },
+                                    { text: '📧 contact@equilibretech.com', style: 'contactInfo' },
+                                    { text: '🔗 linkedin.com/in/antoine-verdure', style: 'contactInfo' }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                layout: {
+                    fillColor: '#f1f5f9',
+                    hLineWidth: () => 1,
+                    vLineWidth: () => 1,
+                    hLineColor: () => '#d1d5db',
+                    vLineColor: () => '#d1d5db',
+                    paddingLeft: () => 20,
+                    paddingRight: () => 20,
+                    paddingTop: () => 20,
+                    paddingBottom: () => 20
+                }
+            }
+        ],
+        
+        // === STYLES UNIVERSELS ===
+        styles: {
+            // Headers
+            mainTitle: { fontSize: 24, bold: true, color: '#1e293b' },
+            subtitle: { fontSize: 16, color: '#3b82f6', margin: [0, 4, 0, 0] },
+            aiBadge: { fontSize: 8, bold: true, color: 'white', alignment: 'center' },
+            dateText: { fontSize: 8, color: '#9ca3af', alignment: 'right' },
+            
+            // Urgence
+            urgencyTitle: { fontSize: 13, bold: true, color: '#f59e0b', margin: [0, 0, 0, 5] },
+            urgencyText: { fontSize: 10, color: '#1e293b', margin: [0, 0, 0, 5] },
+            urgencyBenefit: { fontSize: 9, bold: true, color: '#10b981' },
+            
+            // KPI
+            kpiIcon: { fontSize: 20, alignment: 'center', margin: [0, 0, 0, 8] },
+            kpiNumber: { fontSize: 28, bold: true, alignment: 'center', margin: [0, 0, 0, 4] },
+            kpiUnit: { fontSize: 8, bold: true, color: '#6b7280', alignment: 'center', margin: [0, 0, 0, 4] },
+            kpiLabel: { fontSize: 9, color: '#374151', alignment: 'center' },
+            
+            // Sections roadmap
+            sectionTitle: { fontSize: 14, bold: true, color: 'white', margin: [0, 0, 0, 0] },
+            sectionNumber: { fontSize: 10, bold: true, color: 'white' },
+            itemTitle: { fontSize: 11, bold: true, margin: [0, 0, 0, 4] },
+            itemDescription: { fontSize: 10, color: '#374151', lineHeight: 1.3 },
+            
+            // CTA
+            ctaTitle: { fontSize: 11, bold: true, color: '#10b981', margin: [0, 0, 0, 8] },
+            ctaItem: { fontSize: 8, color: '#374151', margin: [0, 0, 0, 2] },
+            
+            // Contact
+            contactTitle: { fontSize: 9, bold: true, color: '#1e293b', alignment: 'center', margin: [0, 0, 0, 8] },
+            contactName: { fontSize: 10, bold: true, color: '#3b82f6', alignment: 'center', margin: [0, 0, 0, 2] },
+            contactRole: { fontSize: 8, color: '#6b7280', alignment: 'center', margin: [0, 0, 0, 8] },
+            contactInfo: { fontSize: 7, color: '#374151', alignment: 'center', margin: [0, 0, 0, 2] }
+        }
+    };
+}
+
+function generateRoadmapContent(data) {
+    if (!data.isJSON || !data.roadmap.sections) {
+        return [{ text: 'Roadmap générée par IA - Contenu personnalisé selon votre profil', style: 'itemDescription' }];
+    }
+    
+    const sections = data.roadmap.sections;
+    const sectionColors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
+    
+    return sections.map((section, index) => {
+        const color = sectionColors[index % sectionColors.length];
+        
+        return {
+            stack: [
+                // Header section
+                {
+                    table: {
+                        widths: ['auto', '*'],
+                        body: [
+                            [
+                                {
+                                    table: {
+                                        body: [[{ text: (index + 1).toString(), style: 'sectionNumber' }]]
+                                    },
+                                    layout: {
+                                        fillColor: 'white',
+                                        hLineWidth: () => 0,
+                                        vLineWidth: () => 0,
+                                        paddingLeft: () => 8,
+                                        paddingRight: () => 8,
+                                        paddingTop: () => 6,
+                                        paddingBottom: () => 6
+                                    }
+                                },
+                                { text: section.title, style: 'sectionTitle' }
+                            ]
+                        ]
+                    },
+                    layout: {
+                        fillColor: color,
+                        hLineWidth: () => 0,
+                        vLineWidth: () => 0,
+                        paddingLeft: () => 15,
+                        paddingRight: () => 15,
+                        paddingTop: () => 10,
+                        paddingBottom: () => 10
+                    }
+                },
+                
+                // Items de la section
+                {
+                    stack: section.items.map((item, itemIndex) => ({
+                        columns: [
+                            {
+                                width: 15,
+                                canvas: [
+                                    {
+                                        type: 'ellipse',
+                                        x: 7, y: 7,
+                                        r1: 4, r2: 4,
+                                        color: color
+                                    }
+                                ]
+                            },
+                            {
+                                width: '*',
+                                stack: [
+                                    { text: item.title, style: 'itemTitle', color: color },
+                                    { text: item.description, style: 'itemDescription' }
+                                ]
+                            }
+                        ],
+                        margin: [10, 10, 0, itemIndex === section.items.length - 1 ? 20 : 10]
+                    }))
+                }
+            ],
+            margin: [0, 0, 0, 15]
+        };
+    });
+}
+
+function getSectorName(sector) {
+    const sectorNames = {
+        'esn': 'ESN / Services Numériques',
+        'finance': 'Finance / Banque',
+        'service': 'Services',
+        'commerce': 'Commerce / Retail', 
+        'industrie': 'Industrie / Manufacturing',
+        'sante': 'Santé / Médical',
+        'education': 'Éducation / Formation'
+    };
+    return sectorNames[sector] || 'Services';
 }
 
 // Initialiser l'application
