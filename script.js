@@ -140,10 +140,24 @@ class AuditFlashIA {
     displayResults(roadmap) {
         const resultsSection = document.getElementById('resultsSection');
         const roadmapContent = document.getElementById('roadmapContent');
+        const formData = this.collectFormData();
         
-        // Structurer les résultats en cartes
-        const structuredContent = this.structureRoadmapContent(roadmap);
+        // Afficher le nom de l'entreprise
+        document.getElementById('companyNameResult').textContent = formData.company;
+        
+        // Générer des statistiques simulées basées sur les données
+        this.generateSummaryStats(formData);
+        
+        // Structurer les résultats en timeline
+        const structuredContent = this.structureRoadmapTimeline(roadmap);
         roadmapContent.innerHTML = structuredContent;
+        
+        // Stocker les données pour le PDF
+        this.roadmapData = {
+            company: formData.company,
+            roadmap: roadmap,
+            generatedAt: new Date().toISOString()
+        };
         
         resultsSection.classList.remove('hidden');
         
@@ -159,8 +173,8 @@ class AuditFlashIA {
         });
     }
 
-    structureRoadmapContent(roadmap) {
-        // Parser le contenu HTML retourné par l'IA et le structurer en cartes
+    structureRoadmapTimeline(roadmap) {
+        // Parser le contenu HTML retourné par l'IA et le structurer en timeline
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = roadmap;
         
@@ -185,18 +199,139 @@ class AuditFlashIA {
             sections.push(currentSection);
         }
 
-        // Génerer les cartes
+        // Générer la timeline
         return sections.map((section, index) => {
-            const cardClass = this.getCardClass(section.title);
+            const timelineClass = this.getTimelineClass(section.title);
+            const duration = this.getTimelineDuration(section.title);
+            const marker = this.getTimelineMarker(section.title);
+            
             return `
-                <div class="roadmap-card ${cardClass}" style="animation-delay: ${index * 0.2}s">
-                    <h3>${this.getCardIcon(section.title)} ${section.title}</h3>
-                    <div class="card-content">
+                <div class="timeline-item" style="animation-delay: ${index * 0.3}s">
+                    <div class="timeline-marker ${timelineClass}">
+                        ${marker}
+                    </div>
+                    <div class="timeline-content-item">
+                        <h4>${section.title}</h4>
+                        <div class="timeline-duration">${duration}</div>
                         ${section.content}
                     </div>
                 </div>
             `;
         }).join('');
+    }
+
+    getTimelineClass(title) {
+        if (title.toLowerCase().includes('quick') || title.toLowerCase().includes('rapide')) {
+            return 'quick-wins';
+        } else if (title.toLowerCase().includes('moyen') || title.toLowerCase().includes('terme')) {
+            return 'medium-term';
+        } else if (title.toLowerCase().includes('long') || title.toLowerCase().includes('vision')) {
+            return 'long-term';
+        }
+        return 'quick-wins';
+    }
+
+    getTimelineDuration(title) {
+        if (title.toLowerCase().includes('quick') || title.toLowerCase().includes('rapide')) {
+            return '1-4 semaines';
+        } else if (title.toLowerCase().includes('moyen')) {
+            return '2-6 mois';
+        } else if (title.toLowerCase().includes('long') || title.toLowerCase().includes('vision')) {
+            return '6-18 mois';
+        }
+        return 'Immédiat';
+    }
+
+    getTimelineMarker(title) {
+        if (title.toLowerCase().includes('diagnostic')) return '🔍';
+        if (title.toLowerCase().includes('quick') || title.toLowerCase().includes('rapide')) return '⚡';
+        if (title.toLowerCase().includes('moyen')) return '🛠️';
+        if (title.toLowerCase().includes('long') || title.toLowerCase().includes('vision')) return '🚀';
+        if (title.toLowerCase().includes('roi')) return '💰';
+        return '📋';
+    }
+
+    generateSummaryStats(formData) {
+        // Générer des statistiques basées sur le secteur et la taille
+        const employeeCount = this.getEmployeeCount(formData.employees);
+        const sectorMultiplier = this.getSectorMultiplier(formData.sector);
+        
+        const baseSavings = employeeCount * 2; // heures par mois
+        const savings = Math.round(baseSavings * sectorMultiplier);
+        
+        const baseROI = savings * 35 * 12; // 35€/heure approximatif
+        const roi = Math.round(baseROI * (0.8 + Math.random() * 0.4)); // Variation de ±20%
+        
+        const automationScore = Math.round(45 + Math.random() * 40); // Entre 45% et 85%
+        
+        // Animer les compteurs
+        this.animateCounter(document.getElementById('potentialSavings'), savings);
+        this.animateCounter(document.getElementById('roiEstimate'), roi);
+        this.animateCounter(document.getElementById('automationScore'), automationScore);
+        
+        // Mettre à jour la priorité
+        const priority = this.generateTopPriority(formData);
+        document.getElementById('topPriority').textContent = priority;
+    }
+
+    getEmployeeCount(employeeRange) {
+        switch(employeeRange) {
+            case '1-10': return 6;
+            case '11-50': return 30;
+            case '51-250': return 150;
+            case '250+': return 400;
+            default: return 20;
+        }
+    }
+
+    getSectorMultiplier(sector) {
+        const multipliers = {
+            'esn': 1.3,
+            'finance': 1.2,
+            'service': 1.1,
+            'commerce': 1.0,
+            'industrie': 0.9,
+            'sante': 0.8,
+            'education': 0.7
+        };
+        return multipliers[sector] || 1.0;
+    }
+
+    generateTopPriority(formData) {
+        const priorities = {
+            'esn': 'Automatiser la gestion des tickets clients et le reporting projet',
+            'finance': 'Centraliser les processus de validation et reporting financier',
+            'service': 'Optimiser la gestion client et les workflows d\'approbation',
+            'commerce': 'Automatiser la gestion des commandes et le suivi logistique',
+            'industrie': 'Digitaliser les processus de production et maintenance',
+            'sante': 'Simplifier la gestion des dossiers patients et plannings',
+            'education': 'Automatiser les inscriptions et le suivi pédagogique'
+        };
+        return priorities[formData.sector] || 'Centraliser les emails et automatiser les tâches répétitives';
+    }
+
+    animateCounter(element, target) {
+        if (!element) return;
+        
+        const duration = 2000;
+        const start = performance.now();
+        const startValue = 0;
+        
+        const update = (currentTime) => {
+            const elapsed = currentTime - start;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            const easedProgress = 1 - Math.pow(1 - progress, 3);
+            const current = Math.round(startValue + (target - startValue) * easedProgress);
+            
+            element.textContent = current.toLocaleString();
+            
+            if (progress < 1) {
+                requestAnimationFrame(update);
+            }
+        };
+        
+        requestAnimationFrame(update);
     }
 
     getCardClass(title) {
@@ -380,9 +515,160 @@ function prevStep() {
 }
 
 function downloadPDF() {
-    // Simulation du téléchargement PDF
-    // En production, on pourrait utiliser jsPDF ou une API backend
-    alert('Fonctionnalité de téléchargement PDF à venir ! Pour l\'instant, vous pouvez faire une capture d\'écran de vos résultats.');
+    if (!window.auditApp.roadmapData) {
+        alert('Veuillez d\'abord générer votre roadmap avant de la télécharger.');
+        return;
+    }
+
+    // Utilise jsPDF pour générer le PDF
+    if (typeof window.jsPDF === 'undefined') {
+        // Charger jsPDF dynamiquement
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        script.onload = () => generatePDF();
+        document.head.appendChild(script);
+    } else {
+        generatePDF();
+    }
+}
+
+function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const data = window.auditApp.roadmapData;
+    
+    // Configuration
+    const margin = 20;
+    const pageWidth = doc.internal.pageSize.width;
+    const contentWidth = pageWidth - (margin * 2);
+    let yPosition = margin;
+    
+    // Fonction helper pour ajouter du texte avec retour à la ligne
+    const addText = (text, x, y, options = {}) => {
+        const fontSize = options.fontSize || 12;
+        const fontStyle = options.fontStyle || 'normal';
+        const color = options.color || [0, 0, 0];
+        
+        doc.setFontSize(fontSize);
+        doc.setFont(undefined, fontStyle);
+        doc.setTextColor(...color);
+        
+        const lines = doc.splitTextToSize(text, contentWidth - x + margin);
+        doc.text(lines, x, y);
+        return y + (lines.length * fontSize * 0.5);
+    };
+    
+    // En-tête
+    yPosition = addText('ROADMAP D\'AUTOMATISATION', margin, yPosition, {
+        fontSize: 20,
+        fontStyle: 'bold',
+        color: [15, 23, 42]
+    });
+    
+    yPosition += 10;
+    yPosition = addText(`Entreprise: ${data.company}`, margin, yPosition, {
+        fontSize: 14,
+        fontStyle: 'bold'
+    });
+    
+    yPosition += 5;
+    const date = new Date(data.generatedAt).toLocaleDateString('fr-FR');
+    yPosition = addText(`Généré le: ${date}`, margin, yPosition, {
+        fontSize: 10,
+        color: [100, 116, 139]
+    });
+    
+    yPosition += 20;
+    
+    // Ajouter une ligne de séparation
+    doc.setDrawColor(226, 232, 240);
+    doc.line(margin, yPosition, pageWidth - margin, yPosition);
+    yPosition += 20;
+    
+    // Parser le contenu de la roadmap
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = data.roadmap;
+    
+    const sections = [];
+    let currentSection = null;
+    
+    Array.from(tempDiv.children).forEach(element => {
+        if (element.tagName === 'H3') {
+            if (currentSection) {
+                sections.push(currentSection);
+            }
+            currentSection = {
+                title: element.textContent,
+                content: []
+            };
+        } else if (currentSection) {
+            if (element.tagName === 'UL') {
+                const items = Array.from(element.querySelectorAll('li')).map(li => li.textContent);
+                currentSection.content.push(...items);
+            } else if (element.tagName === 'P') {
+                currentSection.content.push(element.textContent);
+            }
+        }
+    });
+    
+    if (currentSection) {
+        sections.push(currentSection);
+    }
+    
+    // Ajouter les sections
+    sections.forEach((section, index) => {
+        // Vérifier si on a besoin d'une nouvelle page
+        if (yPosition > doc.internal.pageSize.height - 50) {
+            doc.addPage();
+            yPosition = margin;
+        }
+        
+        // Titre de section
+        yPosition = addText(section.title, margin, yPosition, {
+            fontSize: 16,
+            fontStyle: 'bold',
+            color: [6, 182, 212]
+        });
+        
+        yPosition += 10;
+        
+        // Contenu de la section
+        section.content.forEach(item => {
+            if (yPosition > doc.internal.pageSize.height - 30) {
+                doc.addPage();
+                yPosition = margin;
+            }
+            
+            yPosition = addText(`• ${item}`, margin + 5, yPosition, {
+                fontSize: 11
+            });
+            yPosition += 5;
+        });
+        
+        yPosition += 15;
+    });
+    
+    // Pied de page
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(100, 116, 139);
+        doc.text('Généré par Audit Flash IA - Equilibre Tech', margin, doc.internal.pageSize.height - 10);
+        doc.text(`Page ${i}/${pageCount}`, pageWidth - margin - 20, doc.internal.pageSize.height - 10);
+    }
+    
+    // Télécharger le PDF
+    const filename = `roadmap-automatisation-${data.company.replace(/\s+/g, '-').toLowerCase()}-${date.replace(/\//g, '-')}.pdf`;
+    doc.save(filename);
+    
+    // Analytics (optionnel)
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'download', {
+            event_category: 'engagement',
+            event_label: 'roadmap_pdf'
+        });
+    }
 }
 
 // Initialiser l'application

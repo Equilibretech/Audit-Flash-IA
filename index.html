@@ -228,22 +228,83 @@
         <div class="container">
             <div class="results-header">
                 <h2 class="section-title">🎯 Votre Roadmap d'Automatisation Personnalisée</h2>
-                <p class="section-subtitle">Voici vos opportunités d'automatisation classées par priorité</p>
+                <p class="section-subtitle">Analyse générée par l'IA pour <span id="companyNameResult"></span></p>
             </div>
             
-            <div id="roadmapContent" class="roadmap-grid"></div>
+            <!-- Summary Card -->
+            <div class="roadmap-summary">
+                <div class="summary-card">
+                    <div class="summary-left">
+                        <h3>📊 Synthèse de votre audit</h3>
+                        <div class="summary-stats">
+                            <div class="summary-stat">
+                                <span class="stat-value" id="potentialSavings">0</span>
+                                <span class="stat-unit">h/mois</span>
+                                <span class="stat-desc">économisées</span>
+                            </div>
+                            <div class="summary-stat">
+                                <span class="stat-value" id="roiEstimate">0</span>
+                                <span class="stat-unit">€/an</span>
+                                <span class="stat-desc">ROI estimé</span>
+                            </div>
+                            <div class="summary-stat">
+                                <span class="stat-value" id="automationScore">0</span>
+                                <span class="stat-unit">%</span>
+                                <span class="stat-desc">potentiel</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="summary-right">
+                        <div class="priority-indicator">
+                            <h4>🎯 Priorité #1</h4>
+                            <p id="topPriority">Analyse en cours...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <div class="results-cta">
-                <div class="cta-card">
-                    <h3>Prêt à passer à l'action ?</h3>
-                    <p>Contactez-moi pour un audit complet et une mise en œuvre personnalisée.</p>
-                    <div class="cta-buttons">
-                        <a href="mailto:contact@equilibretech.com" class="cta-primary">
-                            📧 Me contacter
-                        </a>
-                        <button onclick="downloadPDF()" class="cta-secondary">
-                            📋 Télécharger la roadmap
-                        </button>
+            <!-- Roadmap Timeline -->
+            <div class="roadmap-timeline">
+                <div class="timeline-header">
+                    <h3>📅 Votre plan d'action chronologique</h3>
+                    <p>Recommandations personnalisées basées sur votre secteur et vos processus</p>
+                </div>
+                
+                <div id="roadmapContent" class="timeline-content"></div>
+            </div>
+
+            <!-- Action Panel -->
+            <div class="action-panel">
+                <div class="action-card">
+                    <div class="action-left">
+                        <h3>🚀 Prêt à transformer votre entreprise ?</h3>
+                        <p>Passez de l'idée à la réalisation avec un accompagnement personnalisé</p>
+                        <ul class="action-benefits">
+                            <li>✓ Audit détaillé de vos processus</li>
+                            <li>✓ Plan de mise en œuvre sur-mesure</li>
+                            <li>✓ Formation de vos équipes</li>
+                            <li>✓ Support technique continu</li>
+                        </ul>
+                    </div>
+                    <div class="action-right">
+                        <div class="action-buttons">
+                            <a href="mailto:contact@equilibretech.com" class="cta-primary large">
+                                📞 Planifier un call gratuit
+                            </a>
+                            <button onclick="downloadPDF()" class="cta-secondary large">
+                                📄 Télécharger cette roadmap
+                            </button>
+                        </div>
+                        <div class="trust-indicators">
+                            <div class="trust-item">
+                                <span class="trust-icon">⚡</span>
+                                <span>Réponse sous 24h</span>
+                            </div>
+                            <div class="trust-item">
+                                <span class="trust-icon">🔒</span>
+                                <span>Confidentialité garantie</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
