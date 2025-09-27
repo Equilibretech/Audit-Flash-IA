@@ -613,19 +613,31 @@ function generatePDF() {
         const roi = Math.round(savings * 38 * 12);
         const automationScore = Math.round(55 + Math.random() * 30);
         
-        // Stats en liste simple
-        doc.setFontSize(11);
+        // Stats en format professionnel avec boxes
+        const statHeight = 60;
+        
+        // Box pour les stats
+        doc.setFillColor(250, 250, 250);
+        doc.rect(margin, yPosition, 170, statHeight, 'F');
+        doc.setDrawColor(6, 182, 212);
+        doc.setLineWidth(0.5);
+        doc.rect(margin, yPosition, 170, statHeight, 'S');
+        
+        yPosition += 15;
+        
+        // Stats avec icônes et meilleure présentation
+        doc.setFontSize(12);
         doc.setTextColor(16, 185, 129);
         doc.setFont('helvetica', 'bold');
-        doc.text(`• Heures économisées par mois: ${savings}h`, margin, yPosition);
-        yPosition += 15;
+        doc.text(`⏱ ${savings}h économisées/mois`, margin + 10, yPosition);
+        yPosition += 18;
         
         doc.setTextColor(6, 182, 212);
-        doc.text(`• ROI annuel estimé: ${roi.toLocaleString('fr-FR')}€`, margin, yPosition);
-        yPosition += 15;
+        doc.text(`💰 ${roi.toLocaleString('fr-FR')}€ ROI annuel`, margin + 10, yPosition);
+        yPosition += 18;
         
         doc.setTextColor(15, 23, 42);
-        doc.text(`• Potentiel d'automatisation: ${automationScore}%`, margin, yPosition);
+        doc.text(`🎯 ${automationScore}% potentiel d'automatisation`, margin + 10, yPosition);
         
         yPosition += 40;
         
@@ -655,80 +667,161 @@ function generatePDF() {
         yPosition += 8;
         doc.text('LinkedIn: linkedin.com/in/equilibretech', margin + 10, yPosition);
         
-        // ===== PAGE 2: PLAN D'ACTION SIMPLIFIÉ =====
+        // ===== PAGE 2: PLAN D'ACTION ROBUSTE =====
         doc.addPage();
         yPosition = margin;
         
-        // Header page 2
+        // Header page 2 avec style
+        doc.setFillColor(15, 23, 42);
+        doc.rect(0, 0, 210, 30, 'F');
+        
         doc.setFontSize(16);
-        doc.setTextColor(15, 23, 42);
+        doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
-        doc.text('PLAN D\'ACTION PERSONNALISÉ', margin, yPosition);
+        doc.text('PLAN D\'ACTION PERSONNALISÉ', margin, 20);
         
-        yPosition += 25;
+        yPosition = 50;
         
-        // Parser le contenu de manière robuste
-        const roadmapText = data.roadmap.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
-        const sections = [];
+        // Debug: Vérifier le contenu de la roadmap
+        console.log('Roadmap data:', data.roadmap);
         
-        // Diviser par les sections principales
-        const parts = roadmapText.split(/\d+\.\s*\*?\*?/);
+        // Parser beaucoup plus robuste
+        let roadmapContent = data.roadmap;
         
-        parts.forEach((part, index) => {
-            if (index === 0 || !part.trim()) return;
+        // Si le contenu existe, le traiter
+        if (roadmapContent && roadmapContent.trim()) {
+            // Créer un élément temporaire pour parser le HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = roadmapContent;
             
-            const lines = part.split(/\n|•|\*/).filter(line => line.trim());
-            if (lines.length === 0) return;
+            const sections = [];
+            let currentSection = null;
             
-            const title = lines[0].replace(/\*\*/g, '').trim();
-            const content = lines.slice(1)
-                .map(line => line.replace(/^\s*[-•]\s*/, '').trim())
-                .filter(line => line.length > 10);
+            // Parcourir tous les éléments
+            const allElements = tempDiv.querySelectorAll('*');
             
-            if (title && content.length > 0) {
-                sections.push({ title, content });
-            }
-        });
-        
-        // Affichage des sections de manière simple
-        sections.forEach((section, index) => {
-            // Vérifier espace
-            if (yPosition > 250) {
-                doc.addPage();
-                yPosition = margin;
-            }
-            
-            // Titre de section
-            doc.setFontSize(12);
-            doc.setTextColor(6, 182, 212);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`${index + 1}. ${section.title}`, margin, yPosition);
-            
-            yPosition += 15;
-            
-            // Contenu
-            section.content.forEach(item => {
-                if (yPosition > 270) {
-                    doc.addPage();
-                    yPosition = margin + 10;
+            allElements.forEach(element => {
+                const text = element.textContent.trim();
+                if (!text) return;
+                
+                // Détecter les titres (H1, H2, H3 ou texte en gras)
+                if (element.tagName.match(/^H[1-6]$/) || 
+                    element.style.fontWeight === 'bold' ||
+                    text.match(/^\d+\.\s*[A-Z\s]+$/)) {
+                    
+                    if (currentSection && currentSection.content.length > 0) {
+                        sections.push(currentSection);
+                    }
+                    
+                    currentSection = {
+                        title: text.replace(/^\d+\.\s*/, '').replace(/\*\*/g, ''),
+                        content: []
+                    };
                 }
-                
-                doc.setFontSize(10);
-                doc.setTextColor(75, 85, 99);
-                doc.setFont('helvetica', 'normal');
-                
-                // Texte avec retour à la ligne automatique
-                const lines = doc.splitTextToSize(`• ${item}`, 170);
-                lines.forEach(line => {
-                    doc.text(line, margin + 5, yPosition);
-                    yPosition += 12;
-                });
-                
-                yPosition += 3;
+                // Détecter les items de liste
+                else if (element.tagName === 'LI' || text.startsWith('•') || text.startsWith('-')) {
+                    if (currentSection && text.length > 5) {
+                        const cleanText = text.replace(/^[•\-]\s*/, '').trim();
+                        if (!currentSection.content.includes(cleanText)) {
+                            currentSection.content.push(cleanText);
+                        }
+                    }
+                }
             });
             
-            yPosition += 10;
-        });
+            if (currentSection && currentSection.content.length > 0) {
+                sections.push(currentSection);
+            }
+            
+            // Si aucune section trouvée, parser différemment
+            if (sections.length === 0) {
+                const lines = roadmapContent.split(/\n/).filter(line => line.trim());
+                let currentTitle = null;
+                let currentItems = [];
+                
+                lines.forEach(line => {
+                    const cleanLine = line.replace(/<[^>]*>/g, '').trim();
+                    if (!cleanLine) return;
+                    
+                    if (cleanLine.match(/^\d+\.|^[A-Z\s]{5,}$/)) {
+                        if (currentTitle && currentItems.length > 0) {
+                            sections.push({ title: currentTitle, content: currentItems });
+                        }
+                        currentTitle = cleanLine.replace(/^\d+\.\s*/, '');
+                        currentItems = [];
+                    } else if (cleanLine.match(/^[•\-\*]/) || cleanLine.length > 20) {
+                        const item = cleanLine.replace(/^[•\-\*]\s*/, '');
+                        if (item.length > 5) {
+                            currentItems.push(item);
+                        }
+                    }
+                });
+                
+                if (currentTitle && currentItems.length > 0) {
+                    sections.push({ title: currentTitle, content: currentItems });
+                }
+            }
+            
+            // Affichage professionnel des sections
+            if (sections.length > 0) {
+                sections.forEach((section, index) => {
+                    // Gestion des pages
+                    if (yPosition > 240) {
+                        doc.addPage();
+                        yPosition = margin;
+                    }
+                    
+                    // Titre de section avec style
+                    doc.setFillColor(6, 182, 212, 0.1);
+                    doc.rect(margin, yPosition - 5, 170, 20, 'F');
+                    
+                    doc.setFontSize(13);
+                    doc.setTextColor(6, 182, 212);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`${index + 1}. ${section.title.toUpperCase()}`, margin + 5, yPosition + 8);
+                    
+                    yPosition += 25;
+                    
+                    // Contenu avec puces
+                    section.content.forEach(item => {
+                        if (yPosition > 270) {
+                            doc.addPage();
+                            yPosition = margin;
+                        }
+                        
+                        // Puce colorée
+                        doc.setFillColor(6, 182, 212);
+                        doc.circle(margin + 8, yPosition - 2, 1.5, 'F');
+                        
+                        // Texte de l'item
+                        doc.setFontSize(10);
+                        doc.setTextColor(50, 50, 50);
+                        doc.setFont('helvetica', 'normal');
+                        
+                        const lines = doc.splitTextToSize(item, 160);
+                        lines.forEach(line => {
+                            doc.text(line, margin + 15, yPosition);
+                            yPosition += 12;
+                        });
+                        
+                        yPosition += 3;
+                    });
+                    
+                    yPosition += 15;
+                });
+            } else {
+                // Message de fallback si aucun contenu trouvé
+                doc.setFontSize(12);
+                doc.setTextColor(200, 50, 50);
+                doc.setFont('helvetica', 'italic');
+                doc.text('Contenu en cours de génération...', margin, yPosition);
+                
+                yPosition += 20;
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text('Veuillez générer une nouvelle roadmap pour voir le plan d\'action détaillé.', margin, yPosition);
+            }
+        }
         
         // Pied de page simple
         const pageCount = doc.internal.getNumberOfPages();
