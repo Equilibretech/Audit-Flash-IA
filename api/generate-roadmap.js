@@ -81,17 +81,72 @@ Processus métier: ${formData.processes}
 Défis principaux: ${formData.painPoints}
 Outils actuels: ${formData.tools}
 
-Génère une roadmap d'automatisation personnalisée avec:
+Génère une roadmap d'automatisation personnalisée au format JSON EXACT suivant (RETOURNE UNIQUEMENT LE JSON, RIEN D'AUTRE):
 
-1. **DIAGNOSTIC EXPRESS** (2-3 points clés identifiés)
-2. **QUICK WINS** (2-3 automatisations rapides à implémenter en 1-4 semaines)
-3. **PROJETS MOYEN TERME** (2-3 automatisations plus importantes sur 2-6 mois)
-4. **VISION LONG TERME** (transformation digitale complète sur 6-18 mois)
-5. **ROI ESTIMÉ** (gains de temps et coûts approximatifs)
+{
+  "sections": [
+    {
+      "id": "diagnostic",
+      "title": "DIAGNOSTIC EXPRESS",
+      "items": [
+        {
+          "title": "Titre du problème identifié",
+          "description": "Description détaillée du problème et son impact"
+        }
+      ]
+    },
+    {
+      "id": "quick-wins", 
+      "title": "QUICK WINS",
+      "items": [
+        {
+          "title": "Titre de l'automatisation rapide",
+          "description": "Description concrète avec outils recommandés et bénéfices"
+        }
+      ]
+    },
+    {
+      "id": "moyen-terme",
+      "title": "PROJETS MOYEN TERME", 
+      "items": [
+        {
+          "title": "Titre du projet moyen terme",
+          "description": "Description détaillée de l'implémentation"
+        }
+      ]
+    },
+    {
+      "id": "long-terme",
+      "title": "VISION LONG TERME",
+      "items": [
+        {
+          "title": "Titre de la transformation",
+          "description": "Vision de la transformation digitale complète"
+        }
+      ]
+    },
+    {
+      "id": "roi",
+      "title": "ROI ESTIMÉ",
+      "items": [
+        {
+          "title": "Gains de temps",
+          "description": "Estimation précise des gains de temps et pourcentages"
+        },
+        {
+          "title": "Coûts d'implémentation", 
+          "description": "Coûts estimés et retour sur investissement"
+        }
+      ]
+    }
+  ]
+}
 
-Format en HTML avec des balises <h3>, <ul>, <li>, <strong> pour le styling.
-Sois concret, actionnable et adapté au secteur d'activité.
-Utilise des émojis pour rendre la présentation plus engaging.
-Maximum 800 mots.
+IMPORTANT: 
+- Retourne UNIQUEMENT le JSON valide, sans texte avant ou après
+- 2-3 items par section maximum
+- Descriptions concrètes et actionnables
+- Adaptées au secteur d'activité spécifique
+- Sans emojis ou caractères spéciaux
     `;
 }

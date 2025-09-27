@@ -148,15 +148,41 @@ class AuditFlashIA {
         // Générer des statistiques simulées basées sur les données
         this.generateSummaryStats(formData);
         
-        // Structurer les résultats en timeline
-        const structuredContent = this.structureRoadmapTimeline(roadmap);
+        // Parser le JSON ou utiliser le HTML comme fallback
+        let parsedRoadmap;
+        try {
+            // Nettoyer la réponse et extraire le JSON
+            const cleanedRoadmap = roadmap.replace(/```json|```/g, '').trim();
+            parsedRoadmap = JSON.parse(cleanedRoadmap);
+            console.log('JSON parsed successfully:', parsedRoadmap);
+        } catch (error) {
+            console.log('JSON parsing failed, using HTML fallback:', error);
+            // Fallback vers l'ancien système HTML
+            const structuredContent = this.structureRoadmapTimeline(roadmap);
+            roadmapContent.innerHTML = structuredContent;
+            
+            this.roadmapData = {
+                company: formData.company,
+                roadmap: roadmap,
+                generatedAt: new Date().toISOString()
+            };
+            
+            resultsSection.classList.remove('hidden');
+            setTimeout(() => this.animateResults(), 100);
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+        }
+        
+        // Utiliser le nouveau format JSON
+        const structuredContent = this.structureRoadmapFromJSON(parsedRoadmap);
         roadmapContent.innerHTML = structuredContent;
         
-        // Stocker les données pour le PDF
+        // Stocker les données pour le PDF (format JSON)
         this.roadmapData = {
             company: formData.company,
-            roadmap: roadmap,
-            generatedAt: new Date().toISOString()
+            roadmap: parsedRoadmap,
+            generatedAt: new Date().toISOString(),
+            isJSON: true
         };
         
         resultsSection.classList.remove('hidden');
@@ -171,6 +197,68 @@ class AuditFlashIA {
             behavior: 'smooth',
             block: 'start'
         });
+    }
+
+    structureRoadmapFromJSON(roadmapJSON) {
+        // Générer la timeline à partir du JSON structuré
+        return roadmapJSON.sections.map((section, index) => {
+            const timelineClass = this.getTimelineClassFromId(section.id);
+            const duration = this.getTimelineDurationFromId(section.id);
+            const marker = this.getTimelineMarkerFromId(section.id);
+            
+            const itemsHTML = section.items.map(item => `
+                <div class="timeline-item-content">
+                    <h5>${item.title}</h5>
+                    <p>${item.description}</p>
+                </div>
+            `).join('');
+            
+            return `
+                <div class="timeline-item" style="animation-delay: ${index * 0.3}s">
+                    <div class="timeline-marker ${timelineClass}">
+                        ${marker}
+                    </div>
+                    <div class="timeline-content-item">
+                        <h4>${section.title}</h4>
+                        <div class="timeline-duration">${duration}</div>
+                        ${itemsHTML}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    getTimelineClassFromId(id) {
+        const classMap = {
+            'diagnostic': 'diagnostic',
+            'quick-wins': 'quick-wins',
+            'moyen-terme': 'medium-term',
+            'long-terme': 'long-term',
+            'roi': 'roi'
+        };
+        return classMap[id] || 'quick-wins';
+    }
+
+    getTimelineDurationFromId(id) {
+        const durationMap = {
+            'diagnostic': 'Immédiat',
+            'quick-wins': '1-4 semaines',
+            'moyen-terme': '2-6 mois',
+            'long-terme': '6-18 mois',
+            'roi': 'Retour sur investissement'
+        };
+        return durationMap[id] || '1-4 semaines';
+    }
+
+    getTimelineMarkerFromId(id) {
+        const markerMap = {
+            'diagnostic': '🔍',
+            'quick-wins': '⚡',
+            'moyen-terme': '🚀',
+            'long-terme': '🎯',
+            'roi': '💰'
+        };
+        return markerMap[id] || '⚡';
     }
 
     structureRoadmapTimeline(roadmap) {
@@ -712,8 +800,93 @@ function generatePDF() {
         
         yPosition = 50;
         
-        // Parser avec design professionnel
-        if (data.roadmap && data.roadmap.trim()) {
+        // Utiliser la structure JSON si disponible, sinon fallback HTML
+        if (data.isJSON && data.roadmap && data.roadmap.sections) {
+            // NOUVEAU: Traitement direct du JSON structuré
+            const sections = data.roadmap.sections;
+            let sectionCount = 0;
+            const sectionIcons = ['1', '2', '3', '4', '5'];
+            const sectionColors = [colors.primary, colors.green, colors.cyan, colors.primary, colors.green];
+            
+            sections.forEach(section => {
+                if (yPosition > 240) {
+                    doc.addPage();
+                    yPosition = margin + 20;
+                }
+                
+                const currentColor = sectionColors[sectionCount] || colors.cyan;
+                const currentIcon = sectionIcons[sectionCount] || (sectionCount + 1).toString();
+                
+                // Background coloré pour le titre
+                doc.setFillColor(...currentColor, 0.1);
+                doc.rect(margin, yPosition - 5, 170, 25, 'F');
+                
+                // Bordure gauche colorée
+                doc.setFillColor(...currentColor);
+                doc.rect(margin, yPosition - 5, 4, 25, 'F');
+                
+                // Numéro dans un cercle
+                doc.setFillColor(...currentColor);
+                doc.circle(margin + 15, yPosition + 8, 8, 'F');
+                doc.setFontSize(12);
+                doc.setTextColor(255, 255, 255);
+                doc.setFont('helvetica', 'bold');
+                doc.text(currentIcon, margin + 12, yPosition + 12);
+                
+                // Titre de section
+                doc.setFontSize(13);
+                doc.setTextColor(...currentColor);
+                doc.setFont('helvetica', 'bold');
+                doc.text(section.title.toUpperCase(), margin + 30, yPosition + 12);
+                
+                sectionCount++;
+                yPosition += 30;
+                
+                // Items de la section
+                if (section.items && Array.isArray(section.items)) {
+                    section.items.forEach(item => {
+                        if (yPosition > 260) {
+                            doc.addPage();
+                            yPosition = margin + 10;
+                        }
+                        
+                        // Puce colorée
+                        doc.setFillColor(...currentColor);
+                        doc.circle(margin + 8, yPosition + 2, 2, 'F');
+                        
+                        // Titre de l'item en gras
+                        doc.setFontSize(10);
+                        doc.setTextColor(...currentColor);
+                        doc.setFont('helvetica', 'bold');
+                        const titleLines = doc.splitTextToSize(item.title, 155);
+                        titleLines.forEach(line => {
+                            doc.text(line, margin + 15, yPosition + 5);
+                            yPosition += 10;
+                        });
+                        
+                        yPosition += 2;
+                        
+                        // Description de l'item
+                        doc.setFontSize(9);
+                        doc.setTextColor(...colors.gray);
+                        doc.setFont('helvetica', 'normal');
+                        const descLines = doc.splitTextToSize(item.description, 155);
+                        descLines.forEach(line => {
+                            if (yPosition > 270) {
+                                doc.addPage();
+                                yPosition = margin + 10;
+                            }
+                            doc.text(line, margin + 15, yPosition);
+                            yPosition += 9;
+                        });
+                        
+                        yPosition += 12;
+                    });
+                }
+                yPosition += 10;
+            });
+        } else if (data.roadmap && data.roadmap.trim()) {
+            // FALLBACK: Parser HTML comme avant
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = data.roadmap;
             
