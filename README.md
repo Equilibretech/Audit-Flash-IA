@@ -4,6 +4,8 @@
 
 Démo interactive permettant aux entreprises (ESN, PME/TPE) de générer instantanément une **roadmap d'automatisation personnalisée** grâce à l'IA.
 
+🌐 **Démo en ligne :** https://audit-flash-ia.vercel.app
+
 ## ✨ Fonctionnalités
 
 - **Formulaire intelligent** : collecte des informations sur l'entreprise et ses processus
@@ -11,11 +13,14 @@ Démo interactive permettant aux entreprises (ESN, PME/TPE) de générer instant
 - **Interface moderne** : design responsive et animations fluides
 - **Segmentation claire** : Quick wins, projets moyen terme, vision long terme
 - **ROI estimé** : projections de gains de temps et coûts
+- **API sécurisée** : intégration serverless avec Vercel
 
 ## 🛠️ Technologies
 
 - **Frontend** : HTML5, CSS3, JavaScript (Vanilla)
+- **Backend** : Vercel Serverless Functions
 - **IA** : OpenAI GPT-4 API
+- **Déploiement** : Vercel
 - **Design** : CSS Grid/Flexbox, animations CSS
 - **Responsive** : Compatible mobile/tablette/desktop
 
@@ -25,7 +30,9 @@ Démo interactive permettant aux entreprises (ESN, PME/TPE) de générer instant
 - **PME/TPE** cherchant à automatiser leurs processus
 - **Consultants** en transformation digitale
 
-## 🚀 Installation
+## 🚀 Installation & Déploiement
+
+### Développement Local
 
 1. Cloner le projet
 ```bash
@@ -34,16 +41,39 @@ cd Audit-Flash-IA
 ```
 
 2. Ouvrir `index.html` dans un navigateur
-   - Aucune installation requise
-   - Fonctionne en local ou sur serveur web
+   - Interface visible mais API non fonctionnelle en local
+   - Nécessite un déploiement pour la fonctionnalité complète
+
+### Déploiement Vercel
+
+1. **Via GitHub (recommandé)**
+   ```bash
+   # Push vers GitHub déclenche auto-déploiement
+   git push origin main
+   ```
+
+2. **Via Vercel CLI**
+   ```bash
+   npm install -g vercel
+   npx vercel --prod
+   ```
 
 ## 🔧 Configuration
 
-La clé API OpenAI est intégrée dans le code pour la démo. En production :
+### Variables d'Environnement Vercel
 
-1. Créer un fichier `.env`
-2. Ajouter : `OPENAI_API_KEY=votre_clé_api`
-3. Modifier `script.js` pour utiliser la variable d'environnement
+1. Dans le dashboard Vercel ou via CLI :
+   ```bash
+   npx vercel env add OPENAI_API_KEY
+   ```
+
+2. Ajouter votre clé OpenAI API
+
+### Architecture Serverless
+
+- **Frontend** : Fichiers statiques (`index.html`, `styles.css`, `script.js`)
+- **API** : `/api/generate-roadmap.js` (Vercel Function)
+- **Sécurité** : Clé API côté serveur uniquement
 
 ## 📱 Utilisation
 
@@ -70,7 +100,7 @@ La clé API OpenAI est intégrée dans le code pour la démo. En production :
 Éditer les options dans `index.html` ligne 28-38.
 
 ### Ajuster le prompt IA
-Modifier la fonction `buildPrompt()` dans `script.js` ligne 90-110.
+Modifier la fonction `buildPrompt()` dans `/api/generate-roadmap.js` ligne 70-90.
 
 ### Personnaliser le design
 Modifier les variables CSS dans `styles.css` :
@@ -93,17 +123,36 @@ Pour tracker l'utilisation, ajouter :
 
 - ✅ Validation côté client
 - ✅ Sanitisation des inputs
-- ⚠️ Clé API exposée (démo uniquement)
-- 🔄 À implémenter : validation serveur, rate limiting
+- ✅ Clé API sécurisée côté serveur (Vercel Functions)
+- ✅ Variables d'environnement protégées
+- ✅ CORS configuré
+- 🔄 À implémenter : rate limiting, authentification
+
+## 📁 Structure du Projet
+
+```
+Audit-Flash-IA/
+├── api/
+│   └── generate-roadmap.js    # API Vercel serverless
+├── index.html                 # Interface principale
+├── script.js                  # Logique frontend
+├── styles.css                 # Styles CSS
+├── vercel.json               # Configuration Vercel
+├── .gitignore               # Exclusions Git
+├── .env.example            # Template variables
+└── README.md              # Documentation
+```
 
 ## 📈 Roadmap
 
-- [ ] Backend sécurisé (Node.js/Python)
+- [x] ~~Backend sécurisé~~ (Vercel Serverless)
 - [ ] Base de données des audits
 - [ ] Export PDF des roadmaps
 - [ ] Intégration CRM
 - [ ] Dashboard analytics
 - [ ] A/B testing
+- [ ] Rate limiting
+- [ ] Authentification utilisateur
 
 ## 🤝 Contribution
 
