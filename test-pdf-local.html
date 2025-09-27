@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test PDF Local</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="test-optimal-pdf.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 10px 10px 0;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .data-preview {
+            background: #1f2937;
+            color: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            background: #dcfce7;
+            color: #166534;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test PDF Local - Optimisation Export</h1>
+        
+        <div class="test-section">
+            <h3>1. Données de Test</h3>
+            <p>Structure JSON optimisée pour PDF :</p>
+            <div class="data-preview" id="dataPreview"></div>
+            <button onclick="loadTestData()">Charger Données Test</button>
+            <button onclick="editData()">Éditer Données</button>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Tests PDF</h3>
+            <button onclick="testBasicPDF()">Test PDF Basique</button>
+            <button onclick="testModernPDF()">Test PDF Moderne</button>
+            <button onclick="testOptimalPDF()">Test PDF Optimal</button>
+            <button onclick="testCustomLayout()">Test Layout Personnalisé</button>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Analyse Format</h3>
+            <button onclick="analyzeStructure()">Analyser Structure</button>
+            <button onclick="testDifferentPrompts()">Tester Différents Prompts</button>
+            <button onclick="optimizeForPDF()">Optimiser pour PDF</button>
+        </div>
+
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Données de test
+        let testData = {
+            company: "TechStartup Pro",
+            generatedAt: new Date().toISOString(),
+            isJSON: true,
+            roadmap: {
+                sections: [
+                    {
+                        id: "diagnostic",
+                        title: "DIAGNOSTIC EXPRESS",
+                        items: [
+                            {
+                                title: "Processus de facturation manuel",
+                                description: "Le processus actuel de facturation prend trop de temps et génère des erreurs. Impact estimé : 15h/semaine perdues."
+                            }
+                        ]
+                    },
+                    {
+                        id: "quick-wins",
+                        title: "QUICK WINS",
+                        items: [
+                            {
+                                title: "Automatisation facturation",
+                                description: "Mise en place d'un logiciel de facturation automatisé (Stripe, QuickBooks). ROI : 10h/semaine économisées."
+                            },
+                            {
+                                title: "Templates email",
+                                description: "Création de templates pour les emails clients récurrents. Gain de temps : 3h/semaine."
+                            }
+                        ]
+                    },
+                    {
+                        id: "moyen-terme",
+                        title: "PROJETS MOYEN TERME",
+                        items: [
+                            {
+                                title: "CRM intégré",
+                                description: "Intégration d'un CRM complet (HubSpot, Salesforce) pour centraliser la gestion client. Timeline : 2-3 mois."
+                            }
+                        ]
+                    },
+                    {
+                        id: "long-terme",
+                        title: "VISION LONG TERME",
+                        items: [
+                            {
+                                title: "Écosystème digital complet",
+                                description: "Transformation digitale complète avec IA, automatisation avancée et analytics predictifs."
+                            }
+                        ]
+                    },
+                    {
+                        id: "roi",
+                        title: "ROI ESTIMÉ",
+                        items: [
+                            {
+                                title: "Gains de temps",
+                                description: "28 heures économisées par semaine soit 35% d'amélioration de productivité."
+                            },
+                            {
+                                title: "Retour financier",
+                                description: "Investissement : 5000€ - ROI attendu : 25000€/an grâce aux gains de productivité."
+                            }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        // Couleurs modernes
+        const colors = {
+            primary: [30, 41, 59],
+            accent: [59, 130, 246],
+            success: [34, 197, 94],
+            warning: [251, 146, 60],
+            purple: [147, 51, 234],
+            gray: [71, 85, 105],
+            lightGray: [148, 163, 184],
+            background: [248, 250, 252],
+            white: [255, 255, 255],
+            gradient1: [99, 102, 241],
+            gradient2: [168, 85, 247]
+        };
+
+        function loadTestData() {
+            document.getElementById('dataPreview').textContent = JSON.stringify(testData, null, 2);
+            showResult("Données de test chargées ✅");
+        }
+
+        function editData() {
+            const newData = prompt("Modifiez les données JSON:", JSON.stringify(testData, null, 2));
+            if (newData) {
+                try {
+                    testData = JSON.parse(newData);
+                    loadTestData();
+                    showResult("Données modifiées avec succès ✅");
+                } catch(e) {
+                    showResult("❌ Erreur JSON: " + e.message);
+                }
+            }
+        }
+
+        function testBasicPDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Test basique
+                doc.setFontSize(20);
+                doc.text('ROADMAP BASIQUE', 105, 30, { align: 'center' });
+                
+                doc.setFontSize(16);
+                doc.text(testData.company, 20, 50);
+                
+                let yPos = 70;
+                testData.roadmap.sections.forEach((section, index) => {
+                    doc.setFontSize(14);
+                    doc.text(`${index + 1}. ${section.title}`, 20, yPos);
+                    yPos += 20;
+                    
+                    section.items.forEach(item => {
+                        doc.setFontSize(12);
+                        doc.text(`• ${item.title}`, 25, yPos);
+                        yPos += 10;
+                        
+                        doc.setFontSize(10);
+                        const lines = doc.splitTextToSize(item.description, 160);
+                        lines.forEach(line => {
+                            doc.text(line, 30, yPos);
+                            yPos += 8;
+                        });
+                        yPos += 5;
+                    });
+                    yPos += 10;
+                });
+                
+                doc.save('test-basique.pdf');
+                showResult("PDF basique généré ✅");
+            } catch(e) {
+                showResult("❌ Erreur: " + e.message);
+            }
+        }
+
+        function testModernPDF() {
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const margin = 20;
+                let yPosition = margin;
+                
+                // Header moderne
+                doc.setFillColor(...colors.gradient1);
+                doc.rect(0, 0, 210, 50, 'F');
+                
+                doc.setFontSize(22);
+                doc.setTextColor(...colors.white);
+                doc.setFont('helvetica', 'bold');
+                doc.text('ROADMAP MODERNE', 105, 25, { align: 'center' });
+                
+                doc.setFontSize(10);
+                doc.text('Analyse automatisée par IA', 105, 35, { align: 'center' });
+                
+                yPosition = 70;
+                
+                // Company card
+                doc.setFillColor(...colors.white);
+                doc.rect(margin, yPosition, 170, 30, 'F');
+                doc.setDrawColor(...colors.accent);
+                doc.setLineWidth(1);
+                doc.rect(margin, yPosition, 170, 30, 'S');
+                
+                doc.setFontSize(18);
+                doc.setTextColor(...colors.primary);
+                doc.text(testData.company, margin + 10, yPosition + 20);
+                
+                yPosition += 50;
+                
+                // Sections avec couleurs
+                const sectionColors = [colors.accent, colors.success, colors.warning, colors.purple, colors.gradient1];
+                
+                testData.roadmap.sections.forEach((section, sectionIndex) => {
+                    if (yPosition > 220) {
+                        doc.addPage();
+                        yPosition = 30;
+                    }
+                    
+                    const currentColor = sectionColors[sectionIndex] || colors.accent;
+                    
+                    // Section header
+                    doc.setFillColor(...currentColor);
+                    doc.rect(margin, yPosition, 170, 20, 'F');
+                    
+                    doc.setFontSize(12);
+                    doc.setTextColor(...colors.white);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(`${sectionIndex + 1}. ${section.title}`, margin + 10, yPosition + 13);
+                    
+                    yPosition += 30;
+                    
+                    // Items
+                    section.items.forEach(item => {
+                        if (yPosition > 250) {
+                            doc.addPage();
+                            yPosition = 30;
+                        }
+                        
+                        // Item card
+                        doc.setFillColor(248, 248, 248);
+                        doc.rect(margin + 10, yPosition, 150, 25, 'F');
+                        doc.setFillColor(...currentColor);
+                        doc.rect(margin + 10, yPosition, 3, 25, 'F');
+                        
+                        // Title
+                        doc.setFontSize(10);
+                        doc.setTextColor(...currentColor);
+                        doc.setFont('helvetica', 'bold');
+                        doc.text(item.title, margin + 18, yPosition + 8);
+                        
+                        // Description
+                        doc.setFontSize(9);
+                        doc.setTextColor(...colors.gray);
+                        doc.setFont('helvetica', 'normal');
+                        const lines = doc.splitTextToSize(item.description, 130);
+                        lines.forEach((line, lineIndex) => {
+                            doc.text(line, margin + 18, yPosition + 16 + (lineIndex * 6));
+                        });
+                        
+                        yPosition += 35;
+                    });
+                    yPosition += 10;
+                });
+                
+                doc.save('test-moderne.pdf');
+                showResult("PDF moderne généré ✅");
+            } catch(e) {
+                showResult("❌ Erreur: " + e.message);
+            }
+        }
+
+        function testOptimalPDF() {
+            try {
+                const doc = generateOptimalPDF(testData);
+                doc.save('test-optimal.pdf');
+                showResult("✅ PDF optimal généré avec succès!");
+            } catch(e) {
+                showResult("❌ Erreur PDF optimal: " + e.message);
+                console.error(e);
+            }
+        }
+
+        function testCustomLayout() {
+            showResult("🚧 Test layout personnalisé en cours...");
+        }
+
+        function analyzeStructure() {
+            const analysis = {
+                sectionsCount: testData.roadmap.sections.length,
+                totalItems: testData.roadmap.sections.reduce((acc, section) => acc + section.items.length, 0),
+                averageDescriptionLength: 0,
+                longestDescription: 0,
+                recommendations: []
+            };
+            
+            let totalLength = 0;
+            let maxLength = 0;
+            
+            testData.roadmap.sections.forEach(section => {
+                section.items.forEach(item => {
+                    const length = item.description.length;
+                    totalLength += length;
+                    if (length > maxLength) maxLength = length;
+                });
+            });
+            
+            analysis.averageDescriptionLength = Math.round(totalLength / analysis.totalItems);
+            analysis.longestDescription = maxLength;
+            
+            // Recommandations
+            if (analysis.averageDescriptionLength > 150) {
+                analysis.recommendations.push("Descriptions trop longues pour PDF optimal");
+            }
+            if (analysis.sectionsCount > 5) {
+                analysis.recommendations.push("Trop de sections, risque de débordement");
+            }
+            if (analysis.totalItems > 12) {
+                analysis.recommendations.push("Trop d'items, considérer la pagination");
+            }
+            
+            showResult("📊 Analyse: " + JSON.stringify(analysis, null, 2));
+        }
+
+        function testDifferentPrompts() {
+            const prompts = {
+                current: "Format JSON actuel",
+                optimized: "Format optimisé pour PDF avec longueurs contrôlées",
+                structured: "Format ultra-structuré avec métadonnées PDF"
+            };
+            
+            showResult("📝 Formats de prompt disponibles: " + JSON.stringify(prompts, null, 2));
+        }
+
+        function optimizeForPDF() {
+            // Optimise les données pour un meilleur rendu PDF
+            const optimized = JSON.parse(JSON.stringify(testData));
+            
+            optimized.roadmap.sections.forEach(section => {
+                section.items.forEach(item => {
+                    // Limite les descriptions à 120 caractères
+                    if (item.description.length > 120) {
+                        item.description = item.description.substring(0, 117) + "...";
+                    }
+                    
+                    // Limite les titres à 50 caractères
+                    if (item.title.length > 50) {
+                        item.title = item.title.substring(0, 47) + "...";
+                    }
+                });
+            });
+            
+            testData = optimized;
+            loadTestData();
+            showResult("✅ Données optimisées pour PDF (descriptions < 120 chars, titres < 50 chars)");
+        }
+
+        function showResult(message) {
+            const result = document.getElementById('result');
+            result.style.display = 'block';
+            result.innerHTML = `<strong>Résultat:</strong> ${message}`;
+        }
+
+        // Charger les données au démarrage
+        window.onload = function() {
+            loadTestData();
+        };
+    </script>
+</body>
+</html>

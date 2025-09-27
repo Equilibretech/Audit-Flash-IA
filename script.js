@@ -11,21 +11,17 @@ class AuditFlashIA {
         const form = document.getElementById('auditForm');
         form.addEventListener('submit', (e) => this.handleFormSubmit(e));
         
-        // Event listeners pour la navigation
         document.addEventListener('DOMContentLoaded', () => {
             this.animateCounters();
         });
     }
 
     initializeAnimations() {
-        // Animation des compteurs au chargement
         this.animateCounters();
-        
-        // Intersection Observer pour les animations au scroll
         this.setupScrollAnimations();
     }
 
-    // Gestion du stepper
+    // === NAVIGATION FORMULAIRE ===
     nextStep() {
         if (this.validateCurrentStep()) {
             if (this.currentStep < this.maxSteps) {
@@ -43,7 +39,6 @@ class AuditFlashIA {
     }
 
     updateStepper() {
-        // Mise à jour des étapes dans la navigation
         document.querySelectorAll('.step').forEach((step, index) => {
             const stepNumber = index + 1;
             step.classList.remove('active', 'completed');
@@ -55,7 +50,6 @@ class AuditFlashIA {
             }
         });
 
-        // Mise à jour des sections de formulaire
         document.querySelectorAll('.form-step').forEach((step, index) => {
             const stepNumber = index + 1;
             step.classList.remove('active');
@@ -87,6 +81,7 @@ class AuditFlashIA {
         return isValid;
     }
 
+    // === GESTION FORMULAIRE ===
     async handleFormSubmit(event) {
         event.preventDefault();
         
@@ -137,6 +132,7 @@ class AuditFlashIA {
         return data.roadmap;
     }
 
+    // === AFFICHAGE RÉSULTATS ===
     displayResults(roadmap) {
         const resultsSection = document.getElementById('resultsSection');
         const roadmapContent = document.getElementById('roadmapContent');
@@ -145,26 +141,25 @@ class AuditFlashIA {
         // Afficher le nom de l'entreprise
         document.getElementById('companyNameResult').textContent = formData.company;
         
-        // Générer des statistiques simulées basées sur les données
+        // Générer des statistiques
         this.generateSummaryStats(formData);
         
-        // Parser le JSON ou utiliser le HTML comme fallback
+        // Parser le JSON
         let parsedRoadmap;
         try {
-            // Nettoyer la réponse et extraire le JSON
             const cleanedRoadmap = roadmap.replace(/```json|```/g, '').trim();
             parsedRoadmap = JSON.parse(cleanedRoadmap);
             console.log('JSON parsed successfully:', parsedRoadmap);
         } catch (error) {
             console.log('JSON parsing failed, using HTML fallback:', error);
-            // Fallback vers l'ancien système HTML
             const structuredContent = this.structureRoadmapTimeline(roadmap);
             roadmapContent.innerHTML = structuredContent;
             
             this.roadmapData = {
                 company: formData.company,
                 roadmap: roadmap,
-                generatedAt: new Date().toISOString()
+                generatedAt: new Date().toISOString(),
+                isJSON: false
             };
             
             resultsSection.classList.remove('hidden');
@@ -173,34 +168,25 @@ class AuditFlashIA {
             return;
         }
         
-        // Utiliser le nouveau format JSON
+        // Utiliser le format JSON
         const structuredContent = this.structureRoadmapFromJSON(parsedRoadmap);
         roadmapContent.innerHTML = structuredContent;
         
-        // Stocker les données pour le PDF (format JSON)
+        // Stocker les données pour le PDF
         this.roadmapData = {
             company: formData.company,
             roadmap: parsedRoadmap,
             generatedAt: new Date().toISOString(),
-            isJSON: true
+            isJSON: true,
+            formData: formData
         };
         
         resultsSection.classList.remove('hidden');
-        
-        // Animation d'entrée
-        setTimeout(() => {
-            this.animateResults();
-        }, 100);
-        
-        // Scroll vers les résultats
-        resultsSection.scrollIntoView({ 
-            behavior: 'smooth',
-            block: 'start'
-        });
+        setTimeout(() => this.animateResults(), 100);
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     structureRoadmapFromJSON(roadmapJSON) {
-        // Générer la timeline à partir du JSON structuré
         return roadmapJSON.sections.map((section, index) => {
             const timelineClass = this.getTimelineClassFromId(section.id);
             const duration = this.getTimelineDurationFromId(section.id);
@@ -228,6 +214,53 @@ class AuditFlashIA {
         }).join('');
     }
 
+    structureRoadmapTimeline(roadmap) {
+        // Fallback pour HTML
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = roadmap;
+        
+        const sections = [];
+        let currentSection = null;
+        
+        Array.from(tempDiv.children).forEach(element => {
+            if (element.tagName === 'H3') {
+                if (currentSection) {
+                    sections.push(currentSection);
+                }
+                currentSection = {
+                    title: element.textContent,
+                    content: ''
+                };
+            } else if (currentSection) {
+                currentSection.content += element.outerHTML;
+            }
+        });
+        
+        if (currentSection) {
+            sections.push(currentSection);
+        }
+
+        return sections.map((section, index) => {
+            const timelineClass = this.getTimelineClass(section.title);
+            const duration = this.getTimelineDuration(section.title);
+            const marker = this.getTimelineMarker(section.title);
+            
+            return `
+                <div class="timeline-item" style="animation-delay: ${index * 0.3}s">
+                    <div class="timeline-marker ${timelineClass}">
+                        ${marker}
+                    </div>
+                    <div class="timeline-content-item">
+                        <h4>${section.title}</h4>
+                        <div class="timeline-duration">${duration}</div>
+                        ${section.content}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // === UTILITAIRES ===
     getTimelineClassFromId(id) {
         const classMap = {
             'diagnostic': 'diagnostic',
@@ -259,53 +292,6 @@ class AuditFlashIA {
             'roi': '💰'
         };
         return markerMap[id] || '⚡';
-    }
-
-    structureRoadmapTimeline(roadmap) {
-        // Parser le contenu HTML retourné par l'IA et le structurer en timeline
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = roadmap;
-        
-        const sections = [];
-        let currentSection = null;
-        
-        Array.from(tempDiv.children).forEach(element => {
-            if (element.tagName === 'H3') {
-                if (currentSection) {
-                    sections.push(currentSection);
-                }
-                currentSection = {
-                    title: element.textContent,
-                    content: ''
-                };
-            } else if (currentSection) {
-                currentSection.content += element.outerHTML;
-            }
-        });
-        
-        if (currentSection) {
-            sections.push(currentSection);
-        }
-
-        // Générer la timeline
-        return sections.map((section, index) => {
-            const timelineClass = this.getTimelineClass(section.title);
-            const duration = this.getTimelineDuration(section.title);
-            const marker = this.getTimelineMarker(section.title);
-            
-            return `
-                <div class="timeline-item" style="animation-delay: ${index * 0.3}s">
-                    <div class="timeline-marker ${timelineClass}">
-                        ${marker}
-                    </div>
-                    <div class="timeline-content-item">
-                        <h4>${section.title}</h4>
-                        <div class="timeline-duration">${duration}</div>
-                        ${section.content}
-                    </div>
-                </div>
-            `;
-        }).join('');
     }
 
     getTimelineClass(title) {
@@ -340,24 +326,21 @@ class AuditFlashIA {
     }
 
     generateSummaryStats(formData) {
-        // Générer des statistiques basées sur le secteur et la taille
         const employeeCount = this.getEmployeeCount(formData.employees);
         const sectorMultiplier = this.getSectorMultiplier(formData.sector);
         
-        const baseSavings = employeeCount * 2; // heures par mois
+        const baseSavings = employeeCount * 2.5;
         const savings = Math.round(baseSavings * sectorMultiplier);
         
-        const baseROI = savings * 35 * 12; // 35€/heure approximatif
-        const roi = Math.round(baseROI * (0.8 + Math.random() * 0.4)); // Variation de ±20%
+        const baseROI = savings * 38 * 12;
+        const roi = Math.round(baseROI * (0.8 + Math.random() * 0.4));
         
-        const automationScore = Math.round(45 + Math.random() * 40); // Entre 45% et 85%
+        const automationScore = Math.round(55 + Math.random() * 30);
         
-        // Animer les compteurs
         this.animateCounter(document.getElementById('potentialSavings'), savings);
         this.animateCounter(document.getElementById('roiEstimate'), roi);
         this.animateCounter(document.getElementById('automationScore'), automationScore);
         
-        // Mettre à jour la priorité
         const priority = this.generateTopPriority(formData);
         document.getElementById('topPriority').textContent = priority;
     }
@@ -398,6 +381,7 @@ class AuditFlashIA {
         return priorities[formData.sector] || 'Centraliser les emails et automatiser les tâches répétitives';
     }
 
+    // === ANIMATIONS ===
     animateCounter(element, target) {
         if (!element) return;
         
@@ -420,26 +404,6 @@ class AuditFlashIA {
         };
         
         requestAnimationFrame(update);
-    }
-
-    getCardClass(title) {
-        if (title.toLowerCase().includes('quick') || title.toLowerCase().includes('rapide')) {
-            return 'quick-wins';
-        } else if (title.toLowerCase().includes('moyen') || title.toLowerCase().includes('terme')) {
-            return 'medium-term';
-        } else if (title.toLowerCase().includes('long') || title.toLowerCase().includes('vision')) {
-            return 'long-term';
-        }
-        return '';
-    }
-
-    getCardIcon(title) {
-        if (title.toLowerCase().includes('diagnostic')) return '🔍';
-        if (title.toLowerCase().includes('quick') || title.toLowerCase().includes('rapide')) return '⚡';
-        if (title.toLowerCase().includes('moyen')) return '🛠️';
-        if (title.toLowerCase().includes('long') || title.toLowerCase().includes('vision')) return '🚀';
-        if (title.toLowerCase().includes('roi')) return '💰';
-        return '📋';
     }
 
     animateResults() {
@@ -475,7 +439,6 @@ class AuditFlashIA {
     }
 
     showError(message) {
-        // Créer ou mettre à jour l'élément d'erreur
         let errorDiv = document.getElementById('errorMessage');
         if (!errorDiv) {
             errorDiv = document.createElement('div');
@@ -498,7 +461,6 @@ class AuditFlashIA {
         errorDiv.textContent = message;
         errorDiv.style.display = 'block';
         
-        // Masquer l'erreur après 5 secondes
         setTimeout(() => {
             if (errorDiv) {
                 errorDiv.style.animation = 'slideOutUp 0.3s ease';
@@ -511,24 +473,21 @@ class AuditFlashIA {
         }, 5000);
     }
 
-    // Animation des compteurs
     animateCounters() {
         const counters = document.querySelectorAll('[data-target]');
         
         const animateCounter = (counter) => {
             const target = parseFloat(counter.getAttribute('data-target'));
-            const duration = 2000; // 2 secondes
+            const duration = 2000;
             const start = performance.now();
             
             const update = (currentTime) => {
                 const elapsed = currentTime - start;
                 const progress = Math.min(elapsed / duration, 1);
                 
-                // Easing function
                 const easedProgress = 1 - Math.pow(1 - progress, 3);
                 const current = target * easedProgress;
                 
-                // Formatage du nombre
                 if (target % 1 === 0) {
                     counter.textContent = Math.floor(current);
                 } else {
@@ -543,7 +502,6 @@ class AuditFlashIA {
             requestAnimationFrame(update);
         };
 
-        // Observer pour déclencher l'animation quand visible
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -556,7 +514,6 @@ class AuditFlashIA {
         counters.forEach(counter => observer.observe(counter));
     }
 
-    // Animations au scroll
     setupScrollAnimations() {
         const observerOptions = {
             threshold: 0.1,
@@ -571,7 +528,6 @@ class AuditFlashIA {
             });
         }, observerOptions);
 
-        // Éléments à animer
         const elementsToAnimate = document.querySelectorAll(`
             .problem-stat,
             .testimonial,
@@ -586,7 +542,7 @@ class AuditFlashIA {
     }
 }
 
-// Fonctions globales pour la navigation
+// === FONCTIONS GLOBALES ===
 function scrollToDemo() {
     document.getElementById('demo').scrollIntoView({
         behavior: 'smooth',
@@ -602,599 +558,83 @@ function prevStep() {
     window.auditApp.prevStep();
 }
 
+// === GÉNÉRATION PDF PROFESSIONNELLE AVEC PDFMAKE ===
 function downloadPDF() {
     if (!window.auditApp || !window.auditApp.roadmapData) {
         alert('Veuillez d\'abord générer votre roadmap avant de la télécharger.');
         return;
     }
 
-    // Vérifier si jsPDF est disponible
-    if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
-        // Afficher un message de chargement
+    // Vérifier si PDFMake est disponible
+    if (typeof pdfMake === 'undefined') {
         const button = document.querySelector('button[onclick="downloadPDF()"]');
         const originalText = button.textContent;
-        button.textContent = '📥 Chargement de jsPDF...';
+        button.textContent = '📥 Chargement PDFMake...';
         button.disabled = true;
         
-        // Charger jsPDF dynamiquement
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-        script.onload = () => {
+        // Charger PDFMake dynamiquement
+        Promise.all([
+            loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js'),
+            loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js')
+        ]).then(() => {
             button.textContent = originalText;
             button.disabled = false;
-            generatePDF();
-        };
-        script.onerror = () => {
+            generateProfessionalPDF();
+        }).catch(() => {
             button.textContent = originalText;
             button.disabled = false;
-            alert('Erreur lors du chargement de jsPDF. Veuillez réessayer.');
-        };
-        document.head.appendChild(script);
+            alert('Erreur lors du chargement de PDFMake. Veuillez réessayer.');
+        });
     } else {
-        generatePDF();
+        generateProfessionalPDF();
     }
 }
 
-function generatePDF() {
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+function generateProfessionalPDF() {
     try {
-        let jsPDF;
-        if (window.jspdf && window.jspdf.jsPDF) {
-            jsPDF = window.jspdf.jsPDF;
-        } else if (window.jsPDF) {
-            jsPDF = window.jsPDF;
-        } else {
-            alert('Impossible de charger jsPDF');
-            return;
-        }
-        
-        const doc = new jsPDF();
         const data = window.auditApp.roadmapData;
-        const margin = 20;
-        let yPosition = margin;
+        const formData = data.formData;
         
-        // Couleurs modernes et professionnelles
-        const colors = {
-            primary: [30, 41, 59],      // Slate 700
-            accent: [59, 130, 246],     // Blue 500  
-            success: [34, 197, 94],     // Green 500
-            warning: [251, 146, 60],    // Orange 400
-            purple: [147, 51, 234],     // Purple 600
-            gray: [71, 85, 105],        // Slate 600
-            lightGray: [148, 163, 184], // Slate 400
-            background: [248, 250, 252], // Slate 50
-            white: [255, 255, 255],
-            gradient1: [99, 102, 241],  // Indigo 500
-            gradient2: [168, 85, 247]   // Purple 500
-        };
-        
-        // ===== PAGE 1: COUVERTURE MODERNE =====
-        
-        // Header dégradé moderne
-        doc.setFillColor(...colors.gradient1);
-        doc.rect(0, 0, 210, 60, 'F');
-        doc.setFillColor(...colors.gradient2);
-        doc.rect(0, 0, 210, 30, 'F');
-        
-        // Badge moderne "AI-Powered"
-        doc.setFillColor(...colors.white);
-        doc.rect(140, 8, 60, 12, 'F');
-        doc.setFontSize(7);
-        doc.setTextColor(...colors.accent);
-        doc.setFont('helvetica', 'bold');
-        doc.text('AI-POWERED', 170, 16, { align: 'center' });
-        
-        // Titre principal avec style moderne
-        doc.setFontSize(24);
-        doc.setTextColor(...colors.white);
-        doc.setFont('helvetica', 'bold');
-        doc.text('ROADMAP', 105, 30, { align: 'center' });
-        doc.setFontSize(18);
-        doc.text('D\'AUTOMATISATION', 105, 45, { align: 'center' });
-        
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(240, 240, 240);
-        doc.text('Analyse personnalisée par Intelligence Artificielle', 105, 55, { align: 'center' });
-        
-        yPosition = 80;
-        
-        // Card entreprise moderne avec ombre
-        doc.setFillColor(250, 250, 250);
-        doc.rect(margin + 2, yPosition + 2, 170, 40, 'F'); // Ombre
-        doc.setFillColor(...colors.white);
-        doc.rect(margin, yPosition, 170, 40, 'F');
-        doc.setDrawColor(...colors.accent);
-        doc.setLineWidth(0.8);
-        doc.rect(margin, yPosition, 170, 40, 'S');
-        
-        // Icône entreprise
-        doc.setFillColor(...colors.accent);
-        doc.circle(margin + 15, yPosition + 20, 8, 'F');
-        doc.setFontSize(10);
-        doc.setTextColor(...colors.white);
-        doc.setFont('helvetica', 'bold');
-        doc.text('E', margin + 12, yPosition + 24);
-        
-        // Nom entreprise
-        doc.setFontSize(20);
-        doc.setTextColor(...colors.primary);
-        doc.setFont('helvetica', 'bold');
-        doc.text(data.company, margin + 30, yPosition + 18);
-        
-        const date = new Date(data.generatedAt).toLocaleDateString('fr-FR');
-        doc.setFontSize(9);
-        doc.setTextColor(...colors.gray);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`Genere le ${date}`, margin + 30, yPosition + 30);
-        
-        yPosition += 60;
-        
-        // Stats avec design professionnel
-        const formData = window.auditApp.collectFormData();
+        // Calculer les stats
         const employeeCount = window.auditApp.getEmployeeCount(formData.employees);
         const sectorMultiplier = window.auditApp.getSectorMultiplier(formData.sector);
         const savings = Math.round(employeeCount * 2.5 * sectorMultiplier);
         const roi = Math.round(savings * 38 * 12);
         const automationScore = Math.round(55 + Math.random() * 30);
         
-        // Stats modernes avec design card
-        const stats = [
-            { label: 'Heures économisées/mois', value: `${savings}h`, color: colors.success, bgColor: [220, 252, 231] },
-            { label: 'ROI annuel estimé', value: `${roi.toLocaleString('fr-FR').replace(/\s/g, ' ')}€`, color: colors.accent, bgColor: [219, 234, 254] },
-            { label: 'Potentiel d\'automatisation', value: `${automationScore}%`, color: colors.purple, bgColor: [237, 233, 254] }
-        ];
-        
-        // Titre section avec style moderne
-        doc.setFillColor(...colors.primary);
-        doc.rect(margin, yPosition, 170, 20, 'F');
-        doc.setFontSize(14);
-        doc.setTextColor(...colors.white);
-        doc.setFont('helvetica', 'bold');
-        doc.text('SYNTHESE EXECUTIVE', margin + 15, yPosition + 13);
-        yPosition += 35;
-        
-        stats.forEach((stat, index) => {
-            const cardWidth = 170;
-            const cardHeight = 35;
-            
-            // Ombre de la card
-            doc.setFillColor(240, 240, 240);
-            doc.rect(margin + 1, yPosition + 1, cardWidth, cardHeight, 'F');
-            
-            // Background de la card
-            doc.setFillColor(...stat.bgColor);
-            doc.rect(margin, yPosition, cardWidth, cardHeight, 'F');
-            
-            // Bordure colorée à gauche
-            doc.setFillColor(...stat.color);
-            doc.rect(margin, yPosition, 6, cardHeight, 'F');
-            
-            // Icône dans un cercle
-            doc.setFillColor(...stat.color);
-            doc.circle(margin + 20, yPosition + 17, 10, 'F');
-            doc.setFillColor(...colors.white);
-            doc.circle(margin + 20, yPosition + 17, 8, 'F');
-            doc.setFillColor(...stat.color);
-            doc.circle(margin + 20, yPosition + 17, 6, 'F');
-            
-            // Label
-            doc.setFontSize(10);
-            doc.setTextColor(...colors.gray);
-            doc.setFont('helvetica', 'normal');
-            doc.text(stat.label, margin + 35, yPosition + 12);
-            
-            // Valeur grande
-            doc.setFontSize(18);
-            doc.setTextColor(...stat.color);
-            doc.setFont('helvetica', 'bold');
-            doc.text(stat.value, margin + 35, yPosition + 25);
-            
-            yPosition += 45;
+        // Template PDFMake professionnel
+        const docDefinition = createProfessionalTemplate(data, {
+            savings,
+            roi,
+            automationScore,
+            formData
         });
         
-        yPosition += 20;
-        
-        // Section contact moderne avec dégradé
-        doc.setFillColor(...colors.gradient1);
-        doc.rect(margin, yPosition, 170, 60, 'F');
-        doc.setFillColor(...colors.gradient2);
-        doc.rect(margin, yPosition, 170, 30, 'F');
-        
-        // Avatar expert
-        doc.setFillColor(...colors.white);
-        doc.circle(margin + 25, yPosition + 30, 15, 'F');
-        doc.setFillColor(...colors.accent);
-        doc.circle(margin + 25, yPosition + 30, 12, 'F');
-        doc.setFontSize(12);
-        doc.setTextColor(...colors.white);
-        doc.setFont('helvetica', 'bold');
-        doc.text('A', margin + 20, yPosition + 35);
-        
-        // Titre contact
-        doc.setFontSize(13);
-        doc.setTextColor(...colors.white);
-        doc.setFont('helvetica', 'bold');
-        doc.text('VOTRE EXPERT EN AUTOMATISATION', margin + 45, yPosition + 20);
-        
-        // Nom expert
-        doc.setFontSize(11);
-        doc.setTextColor(...colors.white);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Antoine - Equilibre Tech', margin + 45, yPosition + 32);
-        
-        // Infos contact
-        doc.setFontSize(8);
-        doc.setTextColor(240, 240, 240);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Email: contact@equilibretech.com', margin + 45, yPosition + 42);
-        doc.text('LinkedIn: linkedin.com/in/equilibretech', margin + 45, yPosition + 50);
-        doc.text('Specialiste transformation digitale', margin + 45, yPosition + 58);
-        
-        // ===== PAGE 2: PLAN D'ACTION MODERNE =====
-        doc.addPage();
-        yPosition = margin;
-        
-        // Header moderne page 2
-        doc.setFillColor(...colors.gradient1);
-        doc.rect(0, 0, 210, 40, 'F');
-        doc.setFillColor(...colors.gradient2);
-        doc.rect(0, 0, 210, 20, 'F');
-        
-        doc.setFontSize(18);
-        doc.setTextColor(...colors.white);
-        doc.setFont('helvetica', 'bold');
-        doc.text('PLAN D\'ACTION PERSONNALISE', 105, 25, { align: 'center' });
-        
-        yPosition = 60;
-        
-        // Utiliser la structure JSON si disponible, sinon fallback HTML
-        if (data.isJSON && data.roadmap && data.roadmap.sections) {
-            // NOUVEAU: Traitement direct du JSON structuré
-            const sections = data.roadmap.sections;
-            let sectionCount = 0;
-            const sectionIcons = ['DIAG', 'QUICK', 'MOYEN', 'LONG', 'ROI'];
-            const sectionColors = [colors.accent, colors.success, colors.warning, colors.purple, colors.gradient1];
-            
-            sections.forEach(section => {
-                if (yPosition > 220) {
-                    doc.addPage();
-                    yPosition = margin + 30;
-                }
-                
-                const currentColor = sectionColors[sectionCount] || colors.accent;
-                const currentIcon = sectionIcons[sectionCount] || '📋';
-                
-                // Card moderne pour chaque section
-                doc.setFillColor(245, 245, 245);
-                doc.rect(margin + 2, yPosition + 2, 170, 35, 'F'); // Ombre
-                
-                doc.setFillColor(...colors.white);
-                doc.rect(margin, yPosition, 170, 35, 'F');
-                
-                // Gradient header de section
-                doc.setFillColor(...currentColor);
-                doc.rect(margin, yPosition, 170, 25, 'F');
-                doc.setFillColor(...colors.white);
-                doc.rect(margin, yPosition + 20, 170, 15, 'F');
-                
-                // Badge numéro avec icône
-                doc.setFillColor(...colors.white);
-                doc.circle(margin + 20, yPosition + 12, 12, 'F');
-                doc.setFillColor(...currentColor);
-                doc.circle(margin + 20, yPosition + 12, 10, 'F');
-                
-                doc.setFontSize(8);
-                doc.setTextColor(...colors.white);
-                doc.setFont('helvetica', 'bold');
-                doc.text((sectionCount + 1).toString(), margin + 17, yPosition + 15);
-                
-                // Icône de section
-                doc.setFontSize(7);
-                doc.text(currentIcon, margin + 38, yPosition + 15);
-                
-                // Titre de section moderne
-                doc.setFontSize(12);
-                doc.setTextColor(...colors.white);
-                doc.setFont('helvetica', 'bold');
-                doc.text(section.title, margin + 50, yPosition + 15);
-                
-                sectionCount++;
-                yPosition += 45;
-                
-                // Items de la section avec style moderne
-                if (section.items && Array.isArray(section.items)) {
-                    section.items.forEach((item, itemIndex) => {
-                        if (yPosition > 240) {
-                            doc.addPage();
-                            yPosition = margin + 20;
-                        }
-                        
-                        // Card pour chaque item
-                        const itemHeight = 25 + Math.ceil(item.description.length / 70) * 8;
-                        
-                        doc.setFillColor(250, 250, 250);
-                        doc.rect(margin + 12, yPosition + 1, 156, itemHeight, 'F'); // Ombre
-                        
-                        doc.setFillColor(...colors.white);
-                        doc.rect(margin + 10, yPosition, 156, itemHeight, 'F');
-                        
-                        // Indicateur coloré
-                        doc.setFillColor(...currentColor);
-                        doc.rect(margin + 10, yPosition, 4, itemHeight, 'F');
-                        
-                        // Bullet point moderne
-                        doc.setFillColor(...currentColor);
-                        doc.circle(margin + 20, yPosition + 8, 3, 'F');
-                        
-                        // Titre de l'item
-                        doc.setFontSize(10);
-                        doc.setTextColor(...currentColor);
-                        doc.setFont('helvetica', 'bold');
-                        const titleLines = doc.splitTextToSize(item.title, 140);
-                        let currentY = yPosition + 8;
-                        titleLines.forEach(line => {
-                            doc.text(line, margin + 28, currentY);
-                            currentY += 10;
-                        });
-                        
-                        // Description de l'item
-                        doc.setFontSize(9);
-                        doc.setTextColor(...colors.gray);
-                        doc.setFont('helvetica', 'normal');
-                        const descLines = doc.splitTextToSize(item.description, 140);
-                        descLines.forEach(line => {
-                            doc.text(line, margin + 28, currentY);
-                            currentY += 8;
-                        });
-                        
-                        yPosition += itemHeight + 8;
-                    });
-                }
-                yPosition += 15;
-            });
-        } else if (data.roadmap && data.roadmap.trim()) {
-            // FALLBACK: Parser HTML comme avant
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = data.roadmap;
-            
-            let sectionCount = 0;
-            const sectionIcons = ['1', '2', '3', '4', '5'];
-            const sectionColors = [colors.primary, colors.green, colors.cyan, colors.primary, colors.green];
-            
-            // Traiter les H3 et UL avec design professionnel
-            Array.from(tempDiv.children).forEach(element => {
-                if (yPosition > 240) {
-                    doc.addPage();
-                    yPosition = margin + 20;
-                }
-                
-                if (element.tagName === 'H3') {
-                    const currentColor = sectionColors[sectionCount] || colors.cyan;
-                    const currentIcon = sectionIcons[sectionCount] || '•';
-                    
-                    // Background coloré pour le titre
-                    doc.setFillColor(...currentColor, 0.1);
-                    doc.rect(margin, yPosition - 5, 170, 25, 'F');
-                    
-                    // Bordure gauche colorée
-                    doc.setFillColor(...currentColor);
-                    doc.rect(margin, yPosition - 5, 4, 25, 'F');
-                    
-                    // Numéro dans un cercle
-                    doc.setFillColor(...currentColor);
-                    doc.circle(margin + 15, yPosition + 8, 8, 'F');
-                    doc.setFontSize(12);
-                    doc.setTextColor(255, 255, 255);
-                    doc.setFont('helvetica', 'bold');
-                    doc.text(currentIcon, margin + 12, yPosition + 12);
-                    
-                    // Titre de section
-                    const cleanTitle = element.textContent.replace(/^\d+\.\s*/, '').replace(/[^\w\s]/g, '').trim();
-                    doc.setFontSize(13);
-                    doc.setTextColor(...currentColor);
-                    doc.setFont('helvetica', 'bold');
-                    doc.text(cleanTitle.toUpperCase(), margin + 30, yPosition + 12);
-                    
-                    sectionCount++;
-                    yPosition += 30;
-                } else if (element.tagName === 'UL') {
-                    const currentColor = sectionColors[sectionCount - 1] || colors.cyan;
-                    
-                    Array.from(element.querySelectorAll('li')).forEach(li => {
-                        if (yPosition > 260) {
-                            doc.addPage();
-                            yPosition = margin + 10;
-                        }
-                        
-                        // Puce colorée
-                        doc.setFillColor(...currentColor);
-                        doc.circle(margin + 8, yPosition + 2, 2, 'F');
-                        
-                        // Texte de l'item
-                        let itemText = li.textContent.trim();
-                        
-                        // Séparer titre et description si il y a ":"
-                        const parts = itemText.split(':');
-                        if (parts.length > 1) {
-                            // Titre en gras
-                            doc.setFontSize(10);
-                            doc.setTextColor(...currentColor);
-                            doc.setFont('helvetica', 'bold');
-                            doc.text(`${parts[0].trim()}:`, margin + 15, yPosition + 5);
-                            yPosition += 12;
-                            
-                            // Description
-                            doc.setFontSize(9);
-                            doc.setTextColor(...colors.gray);
-                            doc.setFont('helvetica', 'normal');
-                            const description = parts.slice(1).join(':').trim();
-                            const lines = doc.splitTextToSize(description, 155);
-                            lines.forEach(line => {
-                                doc.text(line, margin + 15, yPosition);
-                                yPosition += 10;
-                            });
-                        } else {
-                            // Texte simple
-                            doc.setFontSize(9);
-                            doc.setTextColor(...colors.gray);
-                            doc.setFont('helvetica', 'normal');
-                            const lines = doc.splitTextToSize(itemText, 155);
-                            lines.forEach(line => {
-                                doc.text(line, margin + 15, yPosition);
-                                yPosition += 10;
-                            });
-                        }
-                        
-                        yPosition += 8;
-                    });
-                    yPosition += 15;
-                }
-            });
-        } else {
-            // Fallback design professionnel
-            doc.setFillColor(...colors.background);
-            doc.rect(margin, yPosition, 170, 40, 'F');
-            doc.setDrawColor(...colors.lightGray);
-            doc.rect(margin, yPosition, 170, 40, 'S');
-            
-            doc.setFontSize(12);
-            doc.setTextColor(...colors.gray);
-            doc.setFont('helvetica', 'italic');
-            doc.text('Plan d\'action en cours de génération...', margin + 10, yPosition + 20);
-            doc.setFontSize(10);
-            doc.text('Veuillez générer une nouvelle roadmap.', margin + 10, yPosition + 30);
-        }
-        
-        // Pied de page professionnel
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            
-            // Ligne de séparation
-            doc.setDrawColor(...colors.lightGray);
-            doc.setLineWidth(0.3);
-            doc.line(margin, 282, 190, 282);
-            
-            // Texte du pied
-            doc.setFontSize(8);
-            doc.setTextColor(...colors.gray);
-            doc.setFont('helvetica', 'normal');
-            doc.text('Audit Flash IA - Equilibre Tech', margin, 290);
-            
-            // Contact dans le pied
-            if (i > 1) {
-                doc.setTextColor(...colors.cyan);
-                doc.text('contact@equilibretech.com', 105, 290, { align: 'center' });
-            }
-            
-            // Numéro de page
-            doc.setTextColor(...colors.gray);
-            doc.text(`Page ${i}/${pageCount}`, 190, 290, { align: 'right' });
-        }
-        
-        // Téléchargement
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        const filename = `Roadmap-Pro-${data.company.replace(/[^a-zA-Z0-9]/g, '-')}-${timestamp}.pdf`;
-        doc.save(filename);
+        // Générer le PDF
+        const filename = `Roadmap-Pro-${data.company.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().slice(0,10)}.pdf`;
+        pdfMake.createPdf(docDefinition).download(filename);
         
         // Analytics
         if (typeof gtag !== 'undefined') {
             gtag('event', 'download', {
                 event_category: 'engagement',
-                event_label: 'roadmap_pdf_professional'
+                event_label: 'roadmap_pdf_professional_pdfmake'
             });
         }
         
     } catch (error) {
-        console.error('Erreur PDF:', error);
-        alert('Erreur lors de la génération du PDF');
-    }
-}
-
-function generateSimplePDF() {
-    // Version de secours simple
-    try {
-        let jsPDF;
-        if (window.jspdf && window.jspdf.jsPDF) {
-            jsPDF = window.jspdf.jsPDF;
-        } else if (window.jsPDF) {
-            jsPDF = window.jsPDF;
-        } else {
-            alert('Impossible de charger jsPDF. Veuillez faire une capture d\'écran de vos résultats ou réessayer plus tard.');
-            return;
-        }
-        
-        const doc = new jsPDF();
-        const data = window.auditApp.roadmapData;
-        const margin = 20;
-        let yPosition = margin;
-        
-        // Titre simple
-        doc.setFontSize(18);
-        doc.text('ROADMAP D\'AUTOMATISATION', margin, yPosition);
-        yPosition += 20;
-        
-        doc.setFontSize(14);
-        doc.text(`Entreprise: ${data.company}`, margin, yPosition);
-        yPosition += 15;
-        
-        const date = new Date(data.generatedAt).toLocaleDateString('fr-FR');
-        doc.setFontSize(12);
-        doc.text(`Généré le: ${date}`, margin, yPosition);
-        yPosition += 20;
-        
-        // Contenu simple
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = data.roadmap;
-        
-        Array.from(tempDiv.children).forEach(element => {
-            if (yPosition > 250) {
-                doc.addPage();
-                yPosition = margin;
-            }
-            
-            if (element.tagName === 'H3') {
-                doc.setFontSize(14);
-                doc.text(element.textContent, margin, yPosition);
-                yPosition += 15;
-            } else if (element.tagName === 'UL') {
-                doc.setFontSize(11);
-                Array.from(element.querySelectorAll('li')).forEach(li => {
-                    if (yPosition > 250) {
-                        doc.addPage();
-                        yPosition = margin;
-                    }
-                    doc.text(`• ${li.textContent}`, margin + 5, yPosition);
-                    yPosition += 10;
-                });
-                yPosition += 10;
-            }
-        });
-        
-        // Contact
-        yPosition += 20;
-        if (yPosition > 220) {
-            doc.addPage();
-            yPosition = margin;
-        }
-        
-        doc.setFontSize(14);
-        doc.text('CONTACT EXPERT', margin, yPosition);
-        yPosition += 15;
-        
-        doc.setFontSize(12);
-        doc.text('Antoine - Equilibre Tech', margin, yPosition);
-        yPosition += 10;
-        doc.text('contact@equilibretech.com', margin, yPosition);
-        yPosition += 10;
-        doc.text('linkedin.com/in/equilibretech', margin, yPosition);
-        
-        const filename = `roadmap-${data.company.replace(/\s+/g, '-').toLowerCase()}.pdf`;
-        doc.save(filename);
-        
-    } catch (error) {
-        console.error('Erreur PDF simple:', error);
-        alert('Erreur lors de la génération du PDF. Veuillez faire une capture d\'écran de vos résultats.');
+        console.error('Erreur PDF professionnel:', error);
+        alert('Erreur lors de la génération du PDF professionnel');
     }
 }
 
@@ -1202,7 +642,6 @@ function generateSimplePDF() {
 document.addEventListener('DOMContentLoaded', () => {
     window.auditApp = new AuditFlashIA();
     
-    // Animation de la barre de progression du mockup
     setTimeout(() => {
         const progressBars = document.querySelectorAll('.progress-fill');
         progressBars.forEach(bar => {
@@ -1225,54 +664,3 @@ document.addEventListener('click', (e) => {
         }
     }
 });
-
-// Ajouter des styles d'animation CSS dynamiquement
-const animationStyles = `
-@keyframes slideInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes slideOutUp {
-    from {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-}
-
-.roadmap-card {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.6s ease;
-}
-
-.roadmap-card.quick-wins {
-    border-left-color: var(--accent-green) !important;
-}
-
-.roadmap-card.medium-term {
-    border-left-color: var(--primary-cyan) !important;
-}
-
-.roadmap-card.long-term {
-    border-left-color: var(--primary-blue) !important;
-}
-`;
-
-// Injection des styles
-if (!document.getElementById('dynamic-animations')) {
-    const styleSheet = document.createElement('style');
-    styleSheet.id = 'dynamic-animations';
-    styleSheet.textContent = animationStyles;
-    document.head.appendChild(styleSheet);
-}
