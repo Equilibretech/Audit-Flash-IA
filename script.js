@@ -635,11 +635,11 @@ function generatePDF() {
         doc.text('SYNTHÈSE EXÉCUTIVE', margin, yPosition);
         yPosition += 20;
         
-        // Stats avec icônes et couleurs
+        // Stats SANS icônes problématiques
         const stats = [
-            { icon: '⏱', label: 'Heures économisées/mois', value: `${savings}h`, color: colors.green },
-            { icon: '💰', label: 'ROI annuel estimé', value: `${roi.toLocaleString('fr-FR')}€`, color: colors.cyan },
-            { icon: '🎯', label: 'Potentiel d\'automatisation', value: `${automationScore}%`, color: colors.primary }
+            { icon: '●', label: 'Heures économisées/mois', value: `${savings}h`, color: colors.green },
+            { icon: '●', label: 'ROI annuel estimé', value: `${roi.toLocaleString('fr-FR').replace(/\s/g, ' ')}€`, color: colors.cyan },
+            { icon: '●', label: 'Potentiel d\'automatisation', value: `${automationScore}%`, color: colors.primary }
         ];
         
         stats.forEach((stat, index) => {
@@ -694,7 +694,8 @@ function generatePDF() {
         doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'normal');
         doc.text('Spécialiste en automatisation et transformation digitale', margin + 10, yPosition + 33);
-        doc.text('📧 contact@equilibretech.com  💼 linkedin.com/in/equilibretech', margin + 10, yPosition + 42);
+        doc.text('Email: contact@equilibretech.com', margin + 10, yPosition + 38);
+        doc.text('LinkedIn: linkedin.com/in/equilibretech', margin + 10, yPosition + 46);
         
         // ===== PAGE 2: PLAN D'ACTION PROFESSIONNEL =====
         doc.addPage();
@@ -717,7 +718,7 @@ function generatePDF() {
             tempDiv.innerHTML = data.roadmap;
             
             let sectionCount = 0;
-            const sectionIcons = ['⚡', '🚀', '⚙️', '🎯', '💰'];
+            const sectionIcons = ['1', '2', '3', '4', '5'];
             const sectionColors = [colors.primary, colors.green, colors.cyan, colors.primary, colors.green];
             
             // Traiter les H3 et UL avec design professionnel
@@ -739,16 +740,20 @@ function generatePDF() {
                     doc.setFillColor(...currentColor);
                     doc.rect(margin, yPosition - 5, 4, 25, 'F');
                     
-                    // Icône
-                    doc.setFontSize(14);
-                    doc.setTextColor(...currentColor);
-                    doc.text(currentIcon, margin + 12, yPosition + 8);
+                    // Numéro dans un cercle
+                    doc.setFillColor(...currentColor);
+                    doc.circle(margin + 15, yPosition + 8, 8, 'F');
+                    doc.setFontSize(12);
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(currentIcon, margin + 12, yPosition + 12);
                     
-                    // Numéro et titre
+                    // Titre de section
                     const cleanTitle = element.textContent.replace(/^\d+\.\s*/, '').replace(/[^\w\s]/g, '').trim();
                     doc.setFontSize(13);
+                    doc.setTextColor(...currentColor);
                     doc.setFont('helvetica', 'bold');
-                    doc.text(`${sectionCount + 1}. ${cleanTitle.toUpperCase()}`, margin + 25, yPosition + 8);
+                    doc.text(cleanTitle.toUpperCase(), margin + 30, yPosition + 12);
                     
                     sectionCount++;
                     yPosition += 30;
