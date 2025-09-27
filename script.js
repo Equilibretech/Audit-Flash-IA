@@ -549,7 +549,7 @@ function downloadPDF() {
 
 function generatePDF() {
     try {
-        // Vérifier la disponibilité de jsPDF
+        // Vérification jsPDF
         let jsPDF;
         if (window.jspdf && window.jspdf.jsPDF) {
             jsPDF = window.jspdf.jsPDF;
@@ -562,107 +562,50 @@ function generatePDF() {
         
         const doc = new jsPDF();
         const data = window.auditApp.roadmapData;
-        
-        // Configuration améliorée
-        const margin = 25;
-        const pageWidth = doc.internal.pageSize.width;
-        const pageHeight = doc.internal.pageSize.height;
-        const contentWidth = pageWidth - (margin * 2);
+        const margin = 20;
         let yPosition = margin;
         
-        const colors = {
-            primary: [15, 23, 42],
-            cyan: [6, 182, 212],
-            green: [16, 185, 129],
-            gray: [75, 85, 99],
-            lightGray: [156, 163, 175],
-            background: [248, 250, 252]
-        };
+        // ===== PAGE 1: COUVERTURE SIMPLIFIÉE =====
         
-        // Fonction améliorée pour le texte
-        const addText = (text, x, y, options = {}) => {
-            const fontSize = options.fontSize || 11;
-            const fontStyle = options.fontStyle || 'normal';
-            const color = options.color || colors.gray;
-            const maxWidth = options.maxWidth || (contentWidth - (x - margin));
-            const lineHeight = options.lineHeight || 1.4;
-            
-            doc.setFontSize(fontSize);
-            doc.setFont('helvetica', fontStyle);
-            doc.setTextColor(...color);
-            
-            const lines = doc.splitTextToSize(text, maxWidth);
-            doc.text(lines, x, y);
-            return y + (lines.length * fontSize * lineHeight * 0.35);
-        };
+        // Header bleu
+        doc.setFillColor(15, 23, 42);
+        doc.rect(0, 0, 210, 50, 'F');
         
-        // Fonction pour les rectangles avec coins arrondis simulés
-        const addBox = (x, y, width, height, fillColor, borderColor = null, opacity = 1) => {
-            if (fillColor) {
-                doc.setFillColor(...fillColor);
-                doc.rect(x, y, width, height, 'F');
-            }
-            if (borderColor) {
-                doc.setDrawColor(...borderColor);
-                doc.setLineWidth(0.5);
-                doc.rect(x, y, width, height, 'S');
-            }
-        };
-        
-        // ===== PAGE DE COUVERTURE REFAITE =====
-        
-        // Header principal avec dégradé simulé
-        addBox(0, 0, pageWidth, 70, colors.primary);
-        
-        // Badge OpenAI repositionné
-        addBox(pageWidth - 80, 15, 70, 25, [255, 255, 255], colors.cyan);
-        doc.setFontSize(8);
-        doc.setTextColor(...colors.cyan);
-        doc.setFont('helvetica', 'bold');
-        doc.text('POWERED BY', pageWidth - 75, 22);
-        doc.text('OpenAI GPT-4', pageWidth - 75, 30);
-        
-        // Titre principal centré et mieux espacé
-        doc.setFontSize(24);
+        // Titre principal
+        doc.setFontSize(20);
         doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
-        doc.text('ROADMAP D\'AUTOMATISATION', pageWidth/2, 35, { align: 'center' });
+        doc.text('ROADMAP D\'AUTOMATISATION', 105, 25, { align: 'center' });
         
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Analyse personnalisée par Intelligence Artificielle', pageWidth/2, 50, { align: 'center' });
-        
-        yPosition = 90;
-        
-        // Carte entreprise repensée
-        addBox(margin, yPosition, contentWidth, 45, colors.background, colors.cyan);
-        
-        doc.setFontSize(18);
-        doc.setTextColor(...colors.primary);
-        doc.setFont('helvetica', 'bold');
-        doc.text(data.company, margin + 15, yPosition + 20);
-        
-        const date = new Date(data.generatedAt).toLocaleDateString('fr-FR', {
-            year: 'numeric',
-            month: 'long', 
-            day: 'numeric'
-        });
         doc.setFontSize(11);
-        doc.setTextColor(...colors.gray);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Rapport généré le ${date}`, margin + 15, yPosition + 32);
+        doc.text('Analyse IA personnalisée', 105, 35, { align: 'center' });
         
-        yPosition = 160;
+        yPosition = 70;
         
-        // Section synthèse repensée
-        doc.setFontSize(16);
-        doc.setTextColor(...colors.primary);
+        // Informations entreprise
+        doc.setFontSize(18);
+        doc.setTextColor(15, 23, 42);
+        doc.setFont('helvetica', 'bold');
+        doc.text(data.company, margin, yPosition);
+        
+        yPosition += 15;
+        const date = new Date(data.generatedAt).toLocaleDateString('fr-FR');
+        doc.setFontSize(11);
+        doc.setTextColor(75, 85, 99);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Rapport généré le ${date}`, margin, yPosition);
+        
+        yPosition += 30;
+        
+        // Statistiques simplifiées
+        doc.setFontSize(14);
+        doc.setTextColor(15, 23, 42);
         doc.setFont('helvetica', 'bold');
         doc.text('SYNTHÈSE EXÉCUTIVE', margin, yPosition);
         
         yPosition += 20;
         
-        // Stats recalculées
         const formData = window.auditApp.collectFormData();
         const employeeCount = window.auditApp.getEmployeeCount(formData.employees);
         const sectorMultiplier = window.auditApp.getSectorMultiplier(formData.sector);
@@ -670,232 +613,131 @@ function generatePDF() {
         const roi = Math.round(savings * 38 * 12);
         const automationScore = Math.round(55 + Math.random() * 30);
         
-        // Boxes statistiques refaites
-        const boxWidth = (contentWidth - 20) / 3;
-        const statData = [
-            { label: 'Heures économisées par mois', value: `${savings}h`, color: colors.green },
-            { label: 'Retour sur investissement annuel', value: `${roi.toLocaleString('fr-FR')}€`, color: colors.cyan },
-            { label: 'Potentiel d\'automatisation', value: `${automationScore}%`, color: colors.primary }
-        ];
-        
-        statData.forEach((stat, index) => {
-            const x = margin + (index * (boxWidth + 10));
-            
-            // Background
-            addBox(x, yPosition, boxWidth, 50, [255, 255, 255], stat.color);
-            
-            // Icône/Indicateur
-            addBox(x + 5, yPosition + 5, 4, 40, stat.color);
-            
-            // Valeur
-            doc.setFontSize(16);
-            doc.setTextColor(...stat.color);
-            doc.setFont('helvetica', 'bold');
-            doc.text(stat.value, x + 15, yPosition + 20);
-            
-            // Label
-            doc.setFontSize(9);
-            doc.setTextColor(...colors.gray);
-            doc.setFont('helvetica', 'normal');
-            const labelLines = doc.splitTextToSize(stat.label, boxWidth - 20);
-            doc.text(labelLines, x + 15, yPosition + 30);
-        });
-        
-        // Section contact repensée
-        yPosition = pageHeight - 90;
-        
-        addBox(margin, yPosition, contentWidth, 70, colors.background, colors.primary);
-        
-        doc.setFontSize(14);
-        doc.setTextColor(...colors.primary);
+        // Stats en liste simple
+        doc.setFontSize(11);
+        doc.setTextColor(16, 185, 129);
         doc.setFont('helvetica', 'bold');
-        doc.text('VOTRE EXPERT EN AUTOMATISATION', margin + 15, yPosition + 15);
+        doc.text(`• Heures économisées par mois: ${savings}h`, margin, yPosition);
+        yPosition += 15;
         
+        doc.setTextColor(6, 182, 212);
+        doc.text(`• ROI annuel estimé: ${roi.toLocaleString('fr-FR')}€`, margin, yPosition);
+        yPosition += 15;
+        
+        doc.setTextColor(15, 23, 42);
+        doc.text(`• Potentiel d'automatisation: ${automationScore}%`, margin, yPosition);
+        
+        yPosition += 40;
+        
+        // Contact
+        doc.setFillColor(248, 250, 252);
+        doc.rect(margin, yPosition, 170, 60, 'F');
+        
+        yPosition += 15;
         doc.setFontSize(12);
-        doc.setTextColor(...colors.gray);
+        doc.setTextColor(15, 23, 42);
         doc.setFont('helvetica', 'bold');
-        doc.text('Antoine - Equilibre Tech', margin + 15, yPosition + 27);
+        doc.text('VOTRE EXPERT EN AUTOMATISATION', margin + 10, yPosition);
         
+        yPosition += 12;
         doc.setFontSize(10);
+        doc.setTextColor(75, 85, 99);
         doc.setFont('helvetica', 'normal');
-        doc.text('Spécialiste en automatisation et transformation digitale des PME/ESN', margin + 15, yPosition + 37);
+        doc.text('Antoine - Equilibre Tech', margin + 10, yPosition);
         
-        doc.setFontSize(10);
-        doc.setTextColor(...colors.cyan);
-        doc.text('✉ contact@equilibretech.com', margin + 15, yPosition + 50);
-        doc.text('💼 linkedin.com/in/equilibretech', margin + 100, yPosition + 50);
+        yPosition += 10;
+        doc.text('Spécialiste automatisation PME/ESN', margin + 10, yPosition);
         
-        doc.setFontSize(8);
-        doc.setTextColor(...colors.gray);
-        doc.text('Réponse sous 24h • Confidentialité garantie • Premier échange gratuit', margin + 15, yPosition + 62);
+        yPosition += 12;
+        doc.setTextColor(6, 182, 212);
+        doc.text('Email: contact@equilibretech.com', margin + 10, yPosition);
         
-        // ===== PAGE CONTENU REFAITE =====
+        yPosition += 8;
+        doc.text('LinkedIn: linkedin.com/in/equilibretech', margin + 10, yPosition);
+        
+        // ===== PAGE 2: PLAN D'ACTION SIMPLIFIÉ =====
         doc.addPage();
         yPosition = margin;
         
-        // Header de page amélioré
-        addBox(0, 0, pageWidth, 40, colors.background);
-        doc.setFontSize(18);
-        doc.setTextColor(...colors.primary);
+        // Header page 2
+        doc.setFontSize(16);
+        doc.setTextColor(15, 23, 42);
         doc.setFont('helvetica', 'bold');
-        doc.text('PLAN D\'ACTION PERSONNALISÉ', margin, 25);
+        doc.text('PLAN D\'ACTION PERSONNALISÉ', margin, yPosition);
         
-        yPosition = 60;
+        yPosition += 25;
         
-        // Parser et restructurer le contenu de manière plus robuste
-        const content = data.roadmap.replace(/<[^>]*>/g, '\n').split('\n');
+        // Parser le contenu de manière robuste
+        const roadmapText = data.roadmap.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
         const sections = [];
-        let currentSection = null;
         
-        content.forEach(line => {
-            const cleanLine = line.trim();
-            if (!cleanLine) return;
+        // Diviser par les sections principales
+        const parts = roadmapText.split(/\d+\.\s*\*?\*?/);
+        
+        parts.forEach((part, index) => {
+            if (index === 0 || !part.trim()) return;
             
-            // Détecter les titres de section (éviter duplication)
-            if (cleanLine.match(/^\d+\.|^###|^\*\*.*\*\*$/)) {
-                if (currentSection && currentSection.content.length > 0) {
-                    sections.push(currentSection);
-                }
-                let title = cleanLine
-                    .replace(/^\d+\.\s*/, '')
-                    .replace(/^###\s*/, '')
-                    .replace(/^\*\*|\*\*$/g, '')
-                    .replace(/[^\w\s]/g, ' ')
-                    .trim();
-                
-                currentSection = { title, content: [] };
-            } else if (currentSection && (cleanLine.startsWith('•') || cleanLine.startsWith('-') || cleanLine.startsWith('*'))) {
-                const item = cleanLine.replace(/^[•\-\*]\s*/, '').trim();
-                if (item && !currentSection.content.includes(item)) {
-                    currentSection.content.push(item);
-                }
+            const lines = part.split(/\n|•|\*/).filter(line => line.trim());
+            if (lines.length === 0) return;
+            
+            const title = lines[0].replace(/\*\*/g, '').trim();
+            const content = lines.slice(1)
+                .map(line => line.replace(/^\s*[-•]\s*/, '').trim())
+                .filter(line => line.length > 10);
+            
+            if (title && content.length > 0) {
+                sections.push({ title, content });
             }
         });
         
-        if (currentSection && currentSection.content.length > 0) {
-            sections.push(currentSection);
-        }
-        
-        // Filtrer sections vides/dupliquées
-        const uniqueSections = sections.filter((section, index, arr) => 
-            section.content.length > 0 && 
-            arr.findIndex(s => s.title === section.title) === index
-        );
-        
-        // Affichage des sections amélioré avec icônes
-        uniqueSections.forEach((section, index) => {
-            // Vérification espace page
-            if (yPosition > pageHeight - 100) {
+        // Affichage des sections de manière simple
+        sections.forEach((section, index) => {
+            // Vérifier espace
+            if (yPosition > 250) {
                 doc.addPage();
                 yPosition = margin;
             }
             
-            // Couleur et icône selon le type
-            let sectionColor = colors.cyan;
-            let sectionIcon = '●';
-            const title = section.title.toLowerCase();
-            
-            if (title.includes('diagnostic') || title.includes('express')) {
-                sectionColor = colors.primary;
-                sectionIcon = '⚡';
-            } else if (title.includes('quick') || title.includes('rapide')) {
-                sectionColor = colors.green;
-                sectionIcon = '🚀';
-            } else if (title.includes('moyen') || title.includes('terme')) {
-                sectionColor = colors.cyan;
-                sectionIcon = '⚙';
-            } else if (title.includes('long') || title.includes('vision')) {
-                sectionColor = colors.primary;
-                sectionIcon = '🎯';
-            } else if (title.includes('roi') || title.includes('estimé')) {
-                sectionColor = colors.green;
-                sectionIcon = '💰';
-            }
-            
-            // Background section avec bordure
-            addBox(margin, yPosition, contentWidth, 30, [250, 252, 255], sectionColor);
-            
-            // Icône section
-            doc.setFontSize(16);
-            doc.setTextColor(...sectionColor);
-            doc.setFont('helvetica', 'bold');
-            doc.text(sectionIcon, margin + 10, yPosition + 20);
-            
             // Titre de section
-            doc.setFontSize(14);
+            doc.setFontSize(12);
+            doc.setTextColor(6, 182, 212);
             doc.setFont('helvetica', 'bold');
-            doc.text(section.title.toUpperCase(), margin + 30, yPosition + 20);
+            doc.text(`${index + 1}. ${section.title}`, margin, yPosition);
             
-            yPosition += 40;
+            yPosition += 15;
             
-            // Contenu de la section avec puces améliorées
-            if (section.content && section.content.length > 0) {
-                section.content.forEach((item, itemIndex) => {
-                    if (yPosition > pageHeight - 60) {
-                        doc.addPage();
-                        yPosition = margin + 20;
-                    }
-                    
-                    // Bullet point circulaire coloré
-                    doc.setFillColor(...sectionColor);
-                    doc.circle(margin + 12, yPosition - 2, 2, 'F');
-                    
-                    // Titre en gras suivi du contenu
-                    const parts = item.split(':');
-                    if (parts.length > 1) {
-                        // Titre en gras
-                        doc.setFontSize(11);
-                        doc.setTextColor(...colors.primary);
-                        doc.setFont('helvetica', 'bold');
-                        doc.text(parts[0] + ':', margin + 20, yPosition);
-                        
-                        // Description
-                        yPosition += 12;
-                        doc.setFontSize(10);
-                        doc.setTextColor(...colors.gray);
-                        doc.setFont('helvetica', 'normal');
-                        yPosition = addText(parts.slice(1).join(':').trim(), margin + 20, yPosition, {
-                            maxWidth: contentWidth - 30,
-                            lineHeight: 1.4
-                        });
-                    } else {
-                        // Texte simple
-                        doc.setFontSize(10);
-                        doc.setTextColor(...colors.gray);
-                        doc.setFont('helvetica', 'normal');
-                        yPosition = addText(item, margin + 20, yPosition, {
-                            maxWidth: contentWidth - 30,
-                            lineHeight: 1.4
-                        });
-                    }
-                    yPosition += 8;
+            // Contenu
+            section.content.forEach(item => {
+                if (yPosition > 270) {
+                    doc.addPage();
+                    yPosition = margin + 10;
+                }
+                
+                doc.setFontSize(10);
+                doc.setTextColor(75, 85, 99);
+                doc.setFont('helvetica', 'normal');
+                
+                // Texte avec retour à la ligne automatique
+                const lines = doc.splitTextToSize(`• ${item}`, 170);
+                lines.forEach(line => {
+                    doc.text(line, margin + 5, yPosition);
+                    yPosition += 12;
                 });
-            }
+                
+                yPosition += 3;
+            });
             
-            yPosition += 20;
+            yPosition += 10;
         });
         
-        // Pied de page pour toutes les pages
+        // Pied de page simple
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
-            
-            // Ligne de séparation
-            doc.setDrawColor(...colors.lightGray);
-            doc.setLineWidth(0.3);
-            doc.line(margin, pageHeight - 25, pageWidth - margin, pageHeight - 25);
-            
-            // Texte du pied
             doc.setFontSize(8);
-            doc.setTextColor(...colors.gray);
-            doc.setFont('helvetica', 'normal');
-            doc.text('Audit Flash IA - Equilibre Tech', margin, pageHeight - 15);
-            doc.text(`Page ${i}/${pageCount}`, pageWidth - margin - 20, pageHeight - 15);
-            
-            if (i > 1) {
-                doc.setTextColor(...colors.cyan);
-                doc.text('contact@equilibretech.com', pageWidth/2, pageHeight - 15, { align: 'center' });
-            }
+            doc.setTextColor(156, 163, 175);
+            doc.text('Audit Flash IA - Equilibre Tech', margin, 287);
+            doc.text(`Page ${i}/${pageCount}`, 190, 287, { align: 'right' });
         }
         
         // Téléchargement
@@ -906,7 +748,7 @@ function generatePDF() {
         if (typeof gtag !== 'undefined') {
             gtag('event', 'download', {
                 event_category: 'engagement',
-                event_label: 'roadmap_pdf_v2'
+                event_label: 'roadmap_pdf_simple'
             });
         }
         
