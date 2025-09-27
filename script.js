@@ -549,341 +549,321 @@ function downloadPDF() {
 
 function generatePDF() {
     try {
-        // Vérifier la disponibilité de jsPDF avec différentes syntaxes
+        // Vérifier la disponibilité de jsPDF
         let jsPDF;
         if (window.jspdf && window.jspdf.jsPDF) {
             jsPDF = window.jspdf.jsPDF;
         } else if (window.jsPDF) {
             jsPDF = window.jsPDF;
         } else {
-            // Essayer une version de secours simple
             generateSimplePDF();
             return;
         }
         
         const doc = new jsPDF();
         const data = window.auditApp.roadmapData;
-    
-    // Configuration et couleurs
-    const margin = 20;
-    const pageWidth = doc.internal.pageSize.width;
-    const pageHeight = doc.internal.pageSize.height;
-    const contentWidth = pageWidth - (margin * 2);
-    let yPosition = margin;
-    
-    const colors = {
-        primary: [15, 23, 42],      // Bleu nuit
-        cyan: [6, 182, 212],        // Cyan
-        green: [16, 185, 129],      // Vert accent
-        gray: [100, 116, 139],      // Gris
-        lightGray: [148, 163, 184], // Gris clair
-        white: [255, 255, 255]
-    };
-    
-    // Fonction helper pour ajouter du texte avec retour à la ligne
-    const addText = (text, x, y, options = {}) => {
-        const fontSize = options.fontSize || 12;
-        const fontStyle = options.fontStyle || 'normal';
-        const color = options.color || [0, 0, 0];
-        const maxWidth = options.maxWidth || (contentWidth - x + margin);
         
-        doc.setFontSize(fontSize);
-        doc.setFont(undefined, fontStyle);
-        doc.setTextColor(...color);
+        // Configuration améliorée
+        const margin = 25;
+        const pageWidth = doc.internal.pageSize.width;
+        const pageHeight = doc.internal.pageSize.height;
+        const contentWidth = pageWidth - (margin * 2);
+        let yPosition = margin;
         
-        const lines = doc.splitTextToSize(text, maxWidth);
-        doc.text(lines, x, y);
-        return y + (lines.length * fontSize * 0.6);
-    };
-    
-    // Fonction pour ajouter un rectangle coloré
-    const addColorBlock = (x, y, width, height, color, opacity = 1) => {
-        doc.setFillColor(...color);
-        if (doc.setGlobalAlpha) {
-            doc.setGlobalAlpha(opacity);
-        }
-        doc.rect(x, y, width, height, 'F');
-        if (doc.setGlobalAlpha) {
-            doc.setGlobalAlpha(1);
-        }
-    };
-    
-    // ===== PAGE DE COUVERTURE =====
-    
-    // Background header coloré
-    addColorBlock(0, 0, pageWidth, 80, colors.primary);
-    
-    // Logo/Badge
-    addColorBlock(margin, 25, 60, 20, colors.cyan, 0.2);
-    doc.setFontSize(10);
-    doc.setTextColor(...colors.cyan);
-    doc.setFont(undefined, 'bold');
-    doc.text('POWERED BY', margin + 5, 32);
-    doc.text('OpenAI GPT-4', margin + 5, 38);
-    
-    // Titre principal
-    doc.setFontSize(28);
-    doc.setTextColor(...colors.white);
-    doc.setFont(undefined, 'bold');
-    doc.text('ROADMAP', pageWidth/2, 35, { align: 'center' });
-    doc.text('D\'AUTOMATISATION', pageWidth/2, 50, { align: 'center' });
-    
-    yPosition = 100;
-    
-    // Carte entreprise
-    addColorBlock(margin, yPosition, contentWidth, 50, colors.lightGray, 0.1);
-    doc.setDrawColor(...colors.cyan);
-    doc.setLineWidth(0.5);
-    doc.rect(margin, yPosition, contentWidth, 50);
-    
-    yPosition += 15;
-    doc.setFontSize(16);
-    doc.setTextColor(...colors.primary);
-    doc.setFont(undefined, 'bold');
-    doc.text(`${data.company}`, margin + 10, yPosition);
-    
-    yPosition += 10;
-    const date = new Date(data.generatedAt).toLocaleDateString('fr-FR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-    doc.setFontSize(12);
-    doc.setTextColor(...colors.gray);
-    doc.setFont(undefined, 'normal');
-    doc.text(`Analyse générée le ${date}`, margin + 10, yPosition);
-    
-    yPosition += 15;
-    doc.setFontSize(10);
-    doc.setTextColor(...colors.lightGray);
-    doc.text('Rapport confidentiel - Usage interne uniquement', margin + 10, yPosition);
-    
-    yPosition = 180;
-    
-    // Section statistiques
-    doc.setFontSize(18);
-    doc.setTextColor(...colors.primary);
-    doc.setFont(undefined, 'bold');
-    doc.text('🎯 SYNTHÈSE EXÉCUTIVE', margin, yPosition);
-    
-    yPosition += 25;
-    
-    // Récupérer les stats actuelles de la page
-    const formData = window.auditApp.collectFormData();
-    const employeeCount = window.auditApp.getEmployeeCount(formData.employees);
-    const sectorMultiplier = window.auditApp.getSectorMultiplier(formData.sector);
-    const savings = Math.round(employeeCount * 2 * sectorMultiplier);
-    const roi = Math.round(savings * 35 * 12 * (0.8 + Math.random() * 0.4));
-    const automationScore = Math.round(45 + Math.random() * 40);
-    
-    // Boxes de statistiques
-    const statBoxWidth = (contentWidth - 20) / 3;
-    const statBoxes = [
-        { label: 'Heures économisées', value: `${savings}h/mois`, color: colors.green },
-        { label: 'ROI estimé', value: `${roi.toLocaleString()}€/an`, color: colors.cyan },
-        { label: 'Potentiel d\'automatisation', value: `${automationScore}%`, color: colors.primary }
-    ];
-    
-    statBoxes.forEach((stat, index) => {
-        const x = margin + (index * (statBoxWidth + 10));
+        const colors = {
+            primary: [15, 23, 42],
+            cyan: [6, 182, 212],
+            green: [16, 185, 129],
+            gray: [75, 85, 99],
+            lightGray: [156, 163, 175],
+            background: [248, 250, 252]
+        };
         
-        // Box colorée
-        addColorBlock(x, yPosition, statBoxWidth, 35, stat.color, 0.1);
-        doc.setDrawColor(...stat.color);
-        doc.setLineWidth(1);
-        doc.rect(x, yPosition, statBoxWidth, 35);
+        // Fonction améliorée pour le texte
+        const addText = (text, x, y, options = {}) => {
+            const fontSize = options.fontSize || 11;
+            const fontStyle = options.fontStyle || 'normal';
+            const color = options.color || colors.gray;
+            const maxWidth = options.maxWidth || (contentWidth - (x - margin));
+            const lineHeight = options.lineHeight || 1.4;
+            
+            doc.setFontSize(fontSize);
+            doc.setFont('helvetica', fontStyle);
+            doc.setTextColor(...color);
+            
+            const lines = doc.splitTextToSize(text, maxWidth);
+            doc.text(lines, x, y);
+            return y + (lines.length * fontSize * lineHeight * 0.35);
+        };
         
-        // Valeur
-        doc.setFontSize(16);
-        doc.setTextColor(...stat.color);
-        doc.setFont(undefined, 'bold');
-        doc.text(stat.value, x + statBoxWidth/2, yPosition + 15, { align: 'center' });
+        // Fonction pour les rectangles avec coins arrondis simulés
+        const addBox = (x, y, width, height, fillColor, borderColor = null, opacity = 1) => {
+            if (fillColor) {
+                doc.setFillColor(...fillColor);
+                doc.rect(x, y, width, height, 'F');
+            }
+            if (borderColor) {
+                doc.setDrawColor(...borderColor);
+                doc.setLineWidth(0.5);
+                doc.rect(x, y, width, height, 'S');
+            }
+        };
         
-        // Label
-        doc.setFontSize(9);
+        // ===== PAGE DE COUVERTURE REFAITE =====
+        
+        // Header principal avec dégradé simulé
+        addBox(0, 0, pageWidth, 70, colors.primary);
+        
+        // Badge OpenAI repositionné
+        addBox(pageWidth - 80, 15, 70, 25, [255, 255, 255], colors.cyan);
+        doc.setFontSize(8);
+        doc.setTextColor(...colors.cyan);
+        doc.setFont('helvetica', 'bold');
+        doc.text('POWERED BY', pageWidth - 75, 22);
+        doc.text('OpenAI GPT-4', pageWidth - 75, 30);
+        
+        // Titre principal centré et mieux espacé
+        doc.setFontSize(24);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.text('ROADMAP D\'AUTOMATISATION', pageWidth/2, 35, { align: 'center' });
+        
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Analyse personnalisée par Intelligence Artificielle', pageWidth/2, 50, { align: 'center' });
+        
+        yPosition = 90;
+        
+        // Carte entreprise repensée
+        addBox(margin, yPosition, contentWidth, 45, colors.background, colors.cyan);
+        
+        doc.setFontSize(18);
+        doc.setTextColor(...colors.primary);
+        doc.setFont('helvetica', 'bold');
+        doc.text(data.company, margin + 15, yPosition + 20);
+        
+        const date = new Date(data.generatedAt).toLocaleDateString('fr-FR', {
+            year: 'numeric',
+            month: 'long', 
+            day: 'numeric'
+        });
+        doc.setFontSize(11);
         doc.setTextColor(...colors.gray);
-        doc.setFont(undefined, 'normal');
-        doc.text(stat.label, x + statBoxWidth/2, yPosition + 25, { align: 'center' });
-    });
-    
-    // Section expert contact
-    yPosition = pageHeight - 120;
-    
-    // Box contact expert
-    addColorBlock(margin, yPosition, contentWidth, 80, colors.primary, 0.05);
-    doc.setDrawColor(...colors.primary);
-    doc.setLineWidth(0.5);
-    doc.rect(margin, yPosition, contentWidth, 80);
-    
-    yPosition += 15;
-    doc.setFontSize(14);
-    doc.setTextColor(...colors.primary);
-    doc.setFont(undefined, 'bold');
-    doc.text('👨‍💼 VOTRE EXPERT EN AUTOMATISATION', margin + 10, yPosition);
-    
-    yPosition += 15;
-    doc.setFontSize(12);
-    doc.setTextColor(...colors.gray);
-    doc.setFont(undefined, 'bold');
-    doc.text('Antoine - Equilibre Tech', margin + 10, yPosition);
-    
-    yPosition += 8;
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'normal');
-    doc.text('Expert en automatisation d\'entreprise et transformation digitale', margin + 10, yPosition);
-    
-    yPosition += 12;
-    doc.setTextColor(...colors.cyan);
-    doc.text('📧 contact@equilibretech.com', margin + 10, yPosition);
-    
-    yPosition += 8;
-    doc.text('💼 linkedin.com/in/equilibretech', margin + 10, yPosition);
-    
-    yPosition += 8;
-    doc.text('🌐 equilibretech.com', margin + 10, yPosition);
-    
-    yPosition += 12;
-    doc.setFontSize(9);
-    doc.setTextColor(...colors.gray);
-    doc.text('Réponse garantie sous 24h • Confidentialité assurée • Premier échange gratuit', margin + 10, yPosition);
-    
-    // ===== NOUVELLES PAGES POUR LE CONTENU =====
-    doc.addPage();
-    yPosition = margin;
-    
-    // Parser le contenu de la roadmap
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = data.roadmap;
-    
-    const sections = [];
-    let currentSection = null;
-    
-    Array.from(tempDiv.children).forEach(element => {
-        if (element.tagName === 'H3') {
-            if (currentSection) {
-                sections.push(currentSection);
-            }
-            currentSection = {
-                title: element.textContent,
-                content: []
-            };
-        } else if (currentSection) {
-            if (element.tagName === 'UL') {
-                const items = Array.from(element.querySelectorAll('li')).map(li => li.textContent);
-                currentSection.content.push(...items);
-            } else if (element.tagName === 'P') {
-                currentSection.content.push(element.textContent);
-            }
-        }
-    });
-    
-    if (currentSection) {
-        sections.push(currentSection);
-    }
-    
-    // Header de page
-    doc.setFontSize(20);
-    doc.setTextColor(...colors.primary);
-    doc.setFont(undefined, 'bold');
-    doc.text('📋 PLAN D\'ACTION DÉTAILLÉ', margin, yPosition);
-    
-    yPosition += 15;
-    doc.setDrawColor(...colors.lightGray);
-    doc.line(margin, yPosition, pageWidth - margin, yPosition);
-    yPosition += 20;
-    
-    // Ajouter les sections avec un design amélioré
-    sections.forEach((section, index) => {
-        // Vérifier si on a besoin d'une nouvelle page
-        if (yPosition > pageHeight - 80) {
-            doc.addPage();
-            yPosition = margin;
-        }
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Rapport généré le ${date}`, margin + 15, yPosition + 32);
         
-        // Couleur de section basée sur le type
-        let sectionColor = colors.cyan;
-        if (section.title.toLowerCase().includes('quick') || section.title.toLowerCase().includes('rapide')) {
-            sectionColor = colors.green;
-        } else if (section.title.toLowerCase().includes('long') || section.title.toLowerCase().includes('vision')) {
-            sectionColor = colors.primary;
-        }
+        yPosition = 160;
         
-        // Barre latérale colorée
-        addColorBlock(margin, yPosition - 5, 3, 20, sectionColor);
+        // Section synthèse repensée
+        doc.setFontSize(16);
+        doc.setTextColor(...colors.primary);
+        doc.setFont('helvetica', 'bold');
+        doc.text('SYNTHÈSE EXÉCUTIVE', margin, yPosition);
         
-        // Titre de section avec background
-        addColorBlock(margin + 5, yPosition - 5, contentWidth - 5, 20, sectionColor, 0.1);
+        yPosition += 20;
+        
+        // Stats recalculées
+        const formData = window.auditApp.collectFormData();
+        const employeeCount = window.auditApp.getEmployeeCount(formData.employees);
+        const sectorMultiplier = window.auditApp.getSectorMultiplier(formData.sector);
+        const savings = Math.round(employeeCount * 2.5 * sectorMultiplier);
+        const roi = Math.round(savings * 38 * 12);
+        const automationScore = Math.round(55 + Math.random() * 30);
+        
+        // Boxes statistiques refaites
+        const boxWidth = (contentWidth - 20) / 3;
+        const statData = [
+            { label: 'Heures économisées par mois', value: `${savings}h`, color: colors.green },
+            { label: 'Retour sur investissement annuel', value: `${roi.toLocaleString('fr-FR')}€`, color: colors.cyan },
+            { label: 'Potentiel d\'automatisation', value: `${automationScore}%`, color: colors.primary }
+        ];
+        
+        statData.forEach((stat, index) => {
+            const x = margin + (index * (boxWidth + 10));
+            
+            // Background
+            addBox(x, yPosition, boxWidth, 50, [255, 255, 255], stat.color);
+            
+            // Icône/Indicateur
+            addBox(x + 5, yPosition + 5, 4, 40, stat.color);
+            
+            // Valeur
+            doc.setFontSize(16);
+            doc.setTextColor(...stat.color);
+            doc.setFont('helvetica', 'bold');
+            doc.text(stat.value, x + 15, yPosition + 20);
+            
+            // Label
+            doc.setFontSize(9);
+            doc.setTextColor(...colors.gray);
+            doc.setFont('helvetica', 'normal');
+            const labelLines = doc.splitTextToSize(stat.label, boxWidth - 20);
+            doc.text(labelLines, x + 15, yPosition + 30);
+        });
+        
+        // Section contact repensée
+        yPosition = pageHeight - 90;
+        
+        addBox(margin, yPosition, contentWidth, 70, colors.background, colors.primary);
         
         doc.setFontSize(14);
-        doc.setTextColor(...sectionColor);
-        doc.setFont(undefined, 'bold');
-        doc.text(section.title, margin + 10, yPosition + 5);
+        doc.setTextColor(...colors.primary);
+        doc.setFont('helvetica', 'bold');
+        doc.text('VOTRE EXPERT EN AUTOMATISATION', margin + 15, yPosition + 15);
         
-        yPosition += 25;
+        doc.setFontSize(12);
+        doc.setTextColor(...colors.gray);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Antoine - Equilibre Tech', margin + 15, yPosition + 27);
         
-        // Contenu de la section
-        section.content.forEach(item => {
-            if (yPosition > pageHeight - 40) {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Spécialiste en automatisation et transformation digitale des PME/ESN', margin + 15, yPosition + 37);
+        
+        doc.setFontSize(10);
+        doc.setTextColor(...colors.cyan);
+        doc.text('✉ contact@equilibretech.com', margin + 15, yPosition + 50);
+        doc.text('💼 linkedin.com/in/equilibretech', margin + 100, yPosition + 50);
+        
+        doc.setFontSize(8);
+        doc.setTextColor(...colors.gray);
+        doc.text('Réponse sous 24h • Confidentialité garantie • Premier échange gratuit', margin + 15, yPosition + 62);
+        
+        // ===== PAGE CONTENU REFAITE =====
+        doc.addPage();
+        yPosition = margin;
+        
+        // Header de page amélioré
+        addBox(0, 0, pageWidth, 40, colors.background);
+        doc.setFontSize(18);
+        doc.setTextColor(...colors.primary);
+        doc.setFont('helvetica', 'bold');
+        doc.text('PLAN D\'ACTION PERSONNALISÉ', margin, 25);
+        
+        yPosition = 60;
+        
+        // Parser et restructurer le contenu
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = data.roadmap;
+        
+        const sections = [];
+        let currentSection = null;
+        
+        Array.from(tempDiv.children).forEach(element => {
+            if (element.tagName === 'H3') {
+                if (currentSection) {
+                    sections.push(currentSection);
+                }
+                currentSection = {
+                    title: element.textContent.replace(/^\d+\.\s*\*?\*?/, ''), // Nettoyer le titre
+                    content: []
+                };
+            } else if (currentSection && element.tagName === 'UL') {
+                const items = Array.from(element.querySelectorAll('li')).map(li => 
+                    li.textContent.replace(/^\*?\*?/, '').trim() // Nettoyer les items
+                );
+                currentSection.content = items;
+            }
+        });
+        
+        if (currentSection) {
+            sections.push(currentSection);
+        }
+        
+        // Affichage des sections amélioré
+        sections.forEach((section, index) => {
+            // Vérification espace page
+            if (yPosition > pageHeight - 100) {
                 doc.addPage();
                 yPosition = margin;
             }
             
-            // Bullet point coloré (remplacer circle par un point simple)
-            doc.setFillColor(...sectionColor);
-            if (doc.circle) {
-                doc.circle(margin + 7, yPosition - 2, 1.5, 'F');
-            } else {
-                // Fallback: petit rectangle
-                doc.rect(margin + 6, yPosition - 3, 2, 2, 'F');
+            // Couleur selon le type
+            let sectionColor = colors.cyan;
+            const title = section.title.toLowerCase();
+            if (title.includes('quick') || title.includes('rapide')) {
+                sectionColor = colors.green;
+            } else if (title.includes('long') || title.includes('vision')) {
+                sectionColor = colors.primary;
             }
             
-            yPosition = addText(item, margin + 15, yPosition, {
-                fontSize: 11,
-                color: colors.primary,
-                maxWidth: contentWidth - 20
-            });
-            yPosition += 3;
+            // Numérotation et titre
+            const sectionNumber = index + 1;
+            
+            // Background section
+            addBox(margin, yPosition, contentWidth, 25, [255, 255, 255], sectionColor);
+            addBox(margin, yPosition, 5, 25, sectionColor);
+            
+            doc.setFontSize(13);
+            doc.setTextColor(...sectionColor);
+            doc.setFont('helvetica', 'bold');
+            doc.text(`${sectionNumber}. ${section.title}`, margin + 15, yPosition + 15);
+            
+            yPosition += 35;
+            
+            // Contenu de la section
+            if (section.content && section.content.length > 0) {
+                section.content.forEach(item => {
+                    if (yPosition > pageHeight - 50) {
+                        doc.addPage();
+                        yPosition = margin;
+                    }
+                    
+                    // Bullet point amélioré
+                    doc.setFillColor(...sectionColor);
+                    doc.rect(margin + 5, yPosition - 2, 2, 2, 'F');
+                    
+                    // Texte avec meilleur espacement
+                    yPosition = addText(item, margin + 15, yPosition, {
+                        fontSize: 10,
+                        color: colors.gray,
+                        maxWidth: contentWidth - 25,
+                        lineHeight: 1.5
+                    });
+                    yPosition += 5;
+                });
+            }
+            
+            yPosition += 15;
         });
         
-        yPosition += 15;
-    });
-    
-    // Pied de page amélioré pour toutes les pages
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        
-        // Ligne de séparation
-        doc.setDrawColor(...colors.lightGray);
-        doc.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
-        
-        // Texte du pied
-        doc.setFontSize(8);
-        doc.setTextColor(...colors.gray);
-        doc.setFont(undefined, 'normal');
-        doc.text('Généré par Audit Flash IA - Equilibre Tech', margin, pageHeight - 12);
-        doc.text(`${i}/${pageCount}`, pageWidth - margin - 10, pageHeight - 12);
-        
-        if (i > 1) {
-            doc.setTextColor(...colors.cyan);
-            doc.text('contact@equilibretech.com', pageWidth/2, pageHeight - 12, { align: 'center' });
+        // Pied de page pour toutes les pages
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            
+            // Ligne de séparation
+            doc.setDrawColor(...colors.lightGray);
+            doc.setLineWidth(0.3);
+            doc.line(margin, pageHeight - 25, pageWidth - margin, pageHeight - 25);
+            
+            // Texte du pied
+            doc.setFontSize(8);
+            doc.setTextColor(...colors.gray);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Audit Flash IA - Equilibre Tech', margin, pageHeight - 15);
+            doc.text(`Page ${i}/${pageCount}`, pageWidth - margin - 20, pageHeight - 15);
+            
+            if (i > 1) {
+                doc.setTextColor(...colors.cyan);
+                doc.text('contact@equilibretech.com', pageWidth/2, pageHeight - 15, { align: 'center' });
+            }
         }
-    }
-    
-    // Télécharger le PDF
-    const filename = `roadmap-automatisation-${data.company.replace(/\s+/g, '-').toLowerCase()}-${date.replace(/\s/g, '-').replace(/,/g, '')}.pdf`;
-    doc.save(filename);
-    
-    // Analytics
-    if (typeof gtag !== 'undefined') {
-        gtag('event', 'download', {
-            event_category: 'engagement',
-            event_label: 'roadmap_pdf'
-        });
-    }
-    
+        
+        // Téléchargement
+        const filename = `Roadmap-Automatisation-${data.company.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(filename);
+        
+        // Analytics
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'download', {
+                event_category: 'engagement',
+                event_label: 'roadmap_pdf_v2'
+            });
+        }
+        
     } catch (error) {
-        console.error('Erreur lors de la génération PDF:', error);
+        console.error('Erreur génération PDF:', error);
         generateSimplePDF();
     }
 }
