@@ -742,89 +742,137 @@ function generatePDF() {
         
         yPosition = 60;
         
-        // Parser et restructurer le contenu
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = data.roadmap;
-        
+        // Parser et restructurer le contenu de manière plus robuste
+        const content = data.roadmap.replace(/<[^>]*>/g, '\n').split('\n');
         const sections = [];
         let currentSection = null;
         
-        Array.from(tempDiv.children).forEach(element => {
-            if (element.tagName === 'H3') {
-                if (currentSection) {
+        content.forEach(line => {
+            const cleanLine = line.trim();
+            if (!cleanLine) return;
+            
+            // Détecter les titres de section (éviter duplication)
+            if (cleanLine.match(/^\d+\.|^###|^\*\*.*\*\*$/)) {
+                if (currentSection && currentSection.content.length > 0) {
                     sections.push(currentSection);
                 }
-                currentSection = {
-                    title: element.textContent.replace(/^\d+\.\s*\*?\*?/, ''), // Nettoyer le titre
-                    content: []
-                };
-            } else if (currentSection && element.tagName === 'UL') {
-                const items = Array.from(element.querySelectorAll('li')).map(li => 
-                    li.textContent.replace(/^\*?\*?/, '').trim() // Nettoyer les items
-                );
-                currentSection.content = items;
+                let title = cleanLine
+                    .replace(/^\d+\.\s*/, '')
+                    .replace(/^###\s*/, '')
+                    .replace(/^\*\*|\*\*$/g, '')
+                    .replace(/[^\w\s]/g, ' ')
+                    .trim();
+                
+                currentSection = { title, content: [] };
+            } else if (currentSection && (cleanLine.startsWith('•') || cleanLine.startsWith('-') || cleanLine.startsWith('*'))) {
+                const item = cleanLine.replace(/^[•\-\*]\s*/, '').trim();
+                if (item && !currentSection.content.includes(item)) {
+                    currentSection.content.push(item);
+                }
             }
         });
         
-        if (currentSection) {
+        if (currentSection && currentSection.content.length > 0) {
             sections.push(currentSection);
         }
         
-        // Affichage des sections amélioré
-        sections.forEach((section, index) => {
+        // Filtrer sections vides/dupliquées
+        const uniqueSections = sections.filter((section, index, arr) => 
+            section.content.length > 0 && 
+            arr.findIndex(s => s.title === section.title) === index
+        );
+        
+        // Affichage des sections amélioré avec icônes
+        uniqueSections.forEach((section, index) => {
             // Vérification espace page
             if (yPosition > pageHeight - 100) {
                 doc.addPage();
                 yPosition = margin;
             }
             
-            // Couleur selon le type
+            // Couleur et icône selon le type
             let sectionColor = colors.cyan;
+            let sectionIcon = '●';
             const title = section.title.toLowerCase();
-            if (title.includes('quick') || title.includes('rapide')) {
+            
+            if (title.includes('diagnostic') || title.includes('express')) {
+                sectionColor = colors.primary;
+                sectionIcon = '⚡';
+            } else if (title.includes('quick') || title.includes('rapide')) {
                 sectionColor = colors.green;
+                sectionIcon = '🚀';
+            } else if (title.includes('moyen') || title.includes('terme')) {
+                sectionColor = colors.cyan;
+                sectionIcon = '⚙';
             } else if (title.includes('long') || title.includes('vision')) {
                 sectionColor = colors.primary;
+                sectionIcon = '🎯';
+            } else if (title.includes('roi') || title.includes('estimé')) {
+                sectionColor = colors.green;
+                sectionIcon = '💰';
             }
             
-            // Numérotation et titre
-            const sectionNumber = index + 1;
+            // Background section avec bordure
+            addBox(margin, yPosition, contentWidth, 30, [250, 252, 255], sectionColor);
             
-            // Background section
-            addBox(margin, yPosition, contentWidth, 25, [255, 255, 255], sectionColor);
-            addBox(margin, yPosition, 5, 25, sectionColor);
-            
-            doc.setFontSize(13);
+            // Icône section
+            doc.setFontSize(16);
             doc.setTextColor(...sectionColor);
             doc.setFont('helvetica', 'bold');
-            doc.text(`${sectionNumber}. ${section.title}`, margin + 15, yPosition + 15);
+            doc.text(sectionIcon, margin + 10, yPosition + 20);
             
-            yPosition += 35;
+            // Titre de section
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.text(section.title.toUpperCase(), margin + 30, yPosition + 20);
             
-            // Contenu de la section
+            yPosition += 40;
+            
+            // Contenu de la section avec puces améliorées
             if (section.content && section.content.length > 0) {
-                section.content.forEach(item => {
-                    if (yPosition > pageHeight - 50) {
+                section.content.forEach((item, itemIndex) => {
+                    if (yPosition > pageHeight - 60) {
                         doc.addPage();
-                        yPosition = margin;
+                        yPosition = margin + 20;
                     }
                     
-                    // Bullet point amélioré
+                    // Bullet point circulaire coloré
                     doc.setFillColor(...sectionColor);
-                    doc.rect(margin + 5, yPosition - 2, 2, 2, 'F');
+                    doc.circle(margin + 12, yPosition - 2, 2, 'F');
                     
-                    // Texte avec meilleur espacement
-                    yPosition = addText(item, margin + 15, yPosition, {
-                        fontSize: 10,
-                        color: colors.gray,
-                        maxWidth: contentWidth - 25,
-                        lineHeight: 1.5
-                    });
-                    yPosition += 5;
+                    // Titre en gras suivi du contenu
+                    const parts = item.split(':');
+                    if (parts.length > 1) {
+                        // Titre en gras
+                        doc.setFontSize(11);
+                        doc.setTextColor(...colors.primary);
+                        doc.setFont('helvetica', 'bold');
+                        doc.text(parts[0] + ':', margin + 20, yPosition);
+                        
+                        // Description
+                        yPosition += 12;
+                        doc.setFontSize(10);
+                        doc.setTextColor(...colors.gray);
+                        doc.setFont('helvetica', 'normal');
+                        yPosition = addText(parts.slice(1).join(':').trim(), margin + 20, yPosition, {
+                            maxWidth: contentWidth - 30,
+                            lineHeight: 1.4
+                        });
+                    } else {
+                        // Texte simple
+                        doc.setFontSize(10);
+                        doc.setTextColor(...colors.gray);
+                        doc.setFont('helvetica', 'normal');
+                        yPosition = addText(item, margin + 20, yPosition, {
+                            maxWidth: contentWidth - 30,
+                            lineHeight: 1.4
+                        });
+                    }
+                    yPosition += 8;
                 });
             }
             
-            yPosition += 15;
+            yPosition += 20;
         });
         
         // Pied de page pour toutes les pages
