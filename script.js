@@ -515,17 +515,32 @@ function prevStep() {
 }
 
 function downloadPDF() {
-    if (!window.auditApp.roadmapData) {
+    if (!window.auditApp || !window.auditApp.roadmapData) {
         alert('Veuillez d\'abord générer votre roadmap avant de la télécharger.');
         return;
     }
 
-    // Utilise jsPDF pour générer le PDF
-    if (typeof window.jsPDF === 'undefined') {
+    // Vérifier si jsPDF est disponible
+    if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
+        // Afficher un message de chargement
+        const button = document.querySelector('button[onclick="downloadPDF()"]');
+        const originalText = button.textContent;
+        button.textContent = '📥 Chargement de jsPDF...';
+        button.disabled = true;
+        
         // Charger jsPDF dynamiquement
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-        script.onload = () => generatePDF();
+        script.onload = () => {
+            button.textContent = originalText;
+            button.disabled = false;
+            generatePDF();
+        };
+        script.onerror = () => {
+            button.textContent = originalText;
+            button.disabled = false;
+            alert('Erreur lors du chargement de jsPDF. Veuillez réessayer.');
+        };
         document.head.appendChild(script);
     } else {
         generatePDF();
@@ -533,9 +548,21 @@ function downloadPDF() {
 }
 
 function generatePDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const data = window.auditApp.roadmapData;
+    try {
+        // Vérifier la disponibilité de jsPDF avec différentes syntaxes
+        let jsPDF;
+        if (window.jspdf && window.jspdf.jsPDF) {
+            jsPDF = window.jspdf.jsPDF;
+        } else if (window.jsPDF) {
+            jsPDF = window.jsPDF;
+        } else {
+            // Essayer une version de secours simple
+            generateSimplePDF();
+            return;
+        }
+        
+        const doc = new jsPDF();
+        const data = window.auditApp.roadmapData;
     
     // Configuration et couleurs
     const margin = 20;
@@ -572,9 +599,13 @@ function generatePDF() {
     // Fonction pour ajouter un rectangle coloré
     const addColorBlock = (x, y, width, height, color, opacity = 1) => {
         doc.setFillColor(...color);
-        doc.setGlobalAlpha(opacity);
+        if (doc.setGlobalAlpha) {
+            doc.setGlobalAlpha(opacity);
+        }
         doc.rect(x, y, width, height, 'F');
-        doc.setGlobalAlpha(1);
+        if (doc.setGlobalAlpha) {
+            doc.setGlobalAlpha(1);
+        }
     };
     
     // ===== PAGE DE COUVERTURE =====
@@ -797,9 +828,14 @@ function generatePDF() {
                 yPosition = margin;
             }
             
-            // Bullet point coloré
+            // Bullet point coloré (remplacer circle par un point simple)
             doc.setFillColor(...sectionColor);
-            doc.circle(margin + 7, yPosition - 2, 1.5, 'F');
+            if (doc.circle) {
+                doc.circle(margin + 7, yPosition - 2, 1.5, 'F');
+            } else {
+                // Fallback: petit rectangle
+                doc.rect(margin + 6, yPosition - 3, 2, 2, 'F');
+            }
             
             yPosition = addText(item, margin + 15, yPosition, {
                 fontSize: 11,
@@ -844,6 +880,98 @@ function generatePDF() {
             event_category: 'engagement',
             event_label: 'roadmap_pdf'
         });
+    }
+    
+    } catch (error) {
+        console.error('Erreur lors de la génération PDF:', error);
+        generateSimplePDF();
+    }
+}
+
+function generateSimplePDF() {
+    // Version de secours simple
+    try {
+        let jsPDF;
+        if (window.jspdf && window.jspdf.jsPDF) {
+            jsPDF = window.jspdf.jsPDF;
+        } else if (window.jsPDF) {
+            jsPDF = window.jsPDF;
+        } else {
+            alert('Impossible de charger jsPDF. Veuillez faire une capture d\'écran de vos résultats ou réessayer plus tard.');
+            return;
+        }
+        
+        const doc = new jsPDF();
+        const data = window.auditApp.roadmapData;
+        const margin = 20;
+        let yPosition = margin;
+        
+        // Titre simple
+        doc.setFontSize(18);
+        doc.text('ROADMAP D\'AUTOMATISATION', margin, yPosition);
+        yPosition += 20;
+        
+        doc.setFontSize(14);
+        doc.text(`Entreprise: ${data.company}`, margin, yPosition);
+        yPosition += 15;
+        
+        const date = new Date(data.generatedAt).toLocaleDateString('fr-FR');
+        doc.setFontSize(12);
+        doc.text(`Généré le: ${date}`, margin, yPosition);
+        yPosition += 20;
+        
+        // Contenu simple
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = data.roadmap;
+        
+        Array.from(tempDiv.children).forEach(element => {
+            if (yPosition > 250) {
+                doc.addPage();
+                yPosition = margin;
+            }
+            
+            if (element.tagName === 'H3') {
+                doc.setFontSize(14);
+                doc.text(element.textContent, margin, yPosition);
+                yPosition += 15;
+            } else if (element.tagName === 'UL') {
+                doc.setFontSize(11);
+                Array.from(element.querySelectorAll('li')).forEach(li => {
+                    if (yPosition > 250) {
+                        doc.addPage();
+                        yPosition = margin;
+                    }
+                    doc.text(`• ${li.textContent}`, margin + 5, yPosition);
+                    yPosition += 10;
+                });
+                yPosition += 10;
+            }
+        });
+        
+        // Contact
+        yPosition += 20;
+        if (yPosition > 220) {
+            doc.addPage();
+            yPosition = margin;
+        }
+        
+        doc.setFontSize(14);
+        doc.text('CONTACT EXPERT', margin, yPosition);
+        yPosition += 15;
+        
+        doc.setFontSize(12);
+        doc.text('Antoine - Equilibre Tech', margin, yPosition);
+        yPosition += 10;
+        doc.text('contact@equilibretech.com', margin, yPosition);
+        yPosition += 10;
+        doc.text('linkedin.com/in/equilibretech', margin, yPosition);
+        
+        const filename = `roadmap-${data.company.replace(/\s+/g, '-').toLowerCase()}.pdf`;
+        doc.save(filename);
+        
+    } catch (error) {
+        console.error('Erreur PDF simple:', error);
+        alert('Erreur lors de la génération du PDF. Veuillez faire une capture d\'écran de vos résultats.');
     }
 }
 
