@@ -611,7 +611,7 @@ function generatePDF() {
         doc.setFont('helvetica', 'normal');
         doc.text(`• Heures économisées: ${savings}h/mois`, margin, yPosition);
         yPosition += 12;
-        doc.text(`• ROI annuel: ${roi.toLocaleString('fr-FR')}€`, margin, yPosition);
+        doc.text(`• ROI annuel: ${roi.toLocaleString('fr-FR').replace(/\s/g, ' ')}€`, margin, yPosition);
         yPosition += 12;
         doc.text(`• Potentiel d'automatisation: ${automationScore}%`, margin, yPosition);
         
@@ -641,12 +641,18 @@ function generatePDF() {
         doc.text('PLAN D\'ACTION', margin, yPosition);
         yPosition += 25;
         
-        // Parser simple et efficace
+        // Parser simple et efficace avec debug
+        console.log('DEBUG PDF - data.roadmap:', data.roadmap);
+        
         if (data.roadmap && data.roadmap.trim()) {
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = data.roadmap;
             
+            console.log('DEBUG PDF - tempDiv.children.length:', tempDiv.children.length);
+            console.log('DEBUG PDF - tempDiv.innerHTML:', tempDiv.innerHTML);
+            
             let sectionCount = 0;
+            let hasContent = false;
             
             // Traiter les H3 et UL
             Array.from(tempDiv.children).forEach(element => {
@@ -655,19 +661,27 @@ function generatePDF() {
                     yPosition = margin;
                 }
                 
+                console.log('DEBUG PDF - element:', element.tagName, element.textContent);
+                
                 if (element.tagName === 'H3') {
                     sectionCount++;
+                    hasContent = true;
                     doc.setFontSize(12);
                     doc.setTextColor(6, 182, 212);
                     doc.setFont('helvetica', 'bold');
                     doc.text(`${sectionCount}. ${element.textContent}`, margin, yPosition);
                     yPosition += 15;
+                    console.log('DEBUG PDF - Added H3:', element.textContent);
                 } else if (element.tagName === 'UL') {
+                    hasContent = true;
                     doc.setFontSize(10);
                     doc.setTextColor(50, 50, 50);
                     doc.setFont('helvetica', 'normal');
                     
-                    Array.from(element.querySelectorAll('li')).forEach(li => {
+                    const listItems = element.querySelectorAll('li');
+                    console.log('DEBUG PDF - UL with', listItems.length, 'items');
+                    
+                    Array.from(listItems).forEach(li => {
                         if (yPosition > 270) {
                             doc.addPage();
                             yPosition = margin;
@@ -679,14 +693,26 @@ function generatePDF() {
                             yPosition += 10;
                         });
                         yPosition += 2;
+                        console.log('DEBUG PDF - Added LI:', li.textContent.substring(0, 50) + '...');
                     });
                     yPosition += 10;
                 }
             });
+            
+            if (!hasContent) {
+                console.log('DEBUG PDF - No content found, showing fallback');
+                doc.setFontSize(12);
+                doc.setTextColor(200, 50, 50);
+                doc.text('Contenu non disponible - Debug activé', margin, yPosition);
+                yPosition += 15;
+                doc.setFontSize(10);
+                doc.text('Vérifiez la console pour les logs de debug', margin, yPosition);
+            }
         } else {
+            console.log('DEBUG PDF - No roadmap data available');
             doc.setFontSize(12);
             doc.setTextColor(200, 50, 50);
-            doc.text('Aucun contenu disponible', margin, yPosition);
+            doc.text('Aucun contenu de roadmap disponible', margin, yPosition);
         }
         
         // Pied de page
@@ -699,8 +725,9 @@ function generatePDF() {
             doc.text(`Page ${i}/${pageCount}`, 190, 287, { align: 'right' });
         }
         
-        // Téléchargement
-        const filename = `Roadmap-Automatisation-${data.company.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+        // Téléchargement avec timestamp pour éviter le cache
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `Roadmap-Automatisation-${data.company.replace(/[^a-zA-Z0-9]/g, '-')}-${timestamp}.pdf`;
         doc.save(filename);
         
     } catch (error) {
