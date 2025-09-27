@@ -651,20 +651,14 @@ function prevStep() {
 
 // === GÉNÉRATION PDF PROFESSIONNELLE AVEC PDFMAKE ===
 function downloadPDF() {
-    console.log('downloadPDF called');
-    console.log('window.auditApp:', window.auditApp);
-    console.log('roadmapData:', window.auditApp?.roadmapData);
-    
     if (!window.auditApp || !window.auditApp.roadmapData) {
         // Si pas de données, générer un PDF d'exemple
-        console.log('Aucune roadmap générée, création d\'un PDF d\'exemple...');
         generateExamplePDF();
         return;
     }
 
     // Vérifier si PDFMake est disponible
     if (typeof pdfMake === 'undefined') {
-        console.log('PDFMake non défini, chargement dynamique...');
         const button = document.querySelector('button[onclick="downloadPDF()"]');
         const originalText = button.textContent;
         button.textContent = '📥 Chargement PDFMake...';
@@ -685,7 +679,6 @@ function downloadPDF() {
             alert('Erreur lors du chargement de PDFMake. Veuillez réessayer.');
         });
     } else {
-        console.log('PDFMake disponible, génération PDF...');
         generateProfessionalPDF();
     }
 }
@@ -702,8 +695,6 @@ function loadScript(src) {
 
 function generateExamplePDF() {
     try {
-        console.log('generateExamplePDF called');
-        
         // Données d'exemple
         const exampleData = {
             company: 'Entreprise Exemple',
@@ -727,7 +718,6 @@ function generateExamplePDF() {
             return;
         }
 
-        console.log('Génération PDF d\'exemple...');
         const docDefinition = createUniversalTemplate(exampleData, exampleStats);
         const filename = `avistra-roadmap-exemple-${Date.now()}.pdf`;
         
@@ -746,11 +736,8 @@ function generateExamplePDF() {
 
 function generateProfessionalPDF() {
     try {
-        console.log('generateProfessionalPDF called');
         const data = window.auditApp.roadmapData;
-        console.log('data:', data);
         const formData = data.formData;
-        console.log('formData:', formData);
         
         // Calculer les stats
         const employeeCount = window.auditApp.getEmployeeCount(formData.employees);
@@ -781,7 +768,7 @@ function generateProfessionalPDF() {
         
     } catch (error) {
         console.error('Erreur PDF universel:', error);
-        alert('Erreur lors de la génération du PDF');
+        alert('Erreur lors de la génération du PDF: ' + error.message);
     }
 }
 
@@ -1217,7 +1204,6 @@ function createUniversalTemplate(data, stats) {
         
         // === POLICES PROFESSIONNELLES ===
         defaultStyle: {
-            font: 'Helvetica',
             fontSize: 10
         }
     };
