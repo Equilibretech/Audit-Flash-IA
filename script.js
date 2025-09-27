@@ -549,14 +549,13 @@ function downloadPDF() {
 
 function generatePDF() {
     try {
-        // Vérification jsPDF
         let jsPDF;
         if (window.jspdf && window.jspdf.jsPDF) {
             jsPDF = window.jspdf.jsPDF;
         } else if (window.jsPDF) {
             jsPDF = window.jsPDF;
         } else {
-            generateSimplePDF();
+            alert('Impossible de charger jsPDF');
             return;
         }
         
@@ -565,47 +564,35 @@ function generatePDF() {
         const margin = 20;
         let yPosition = margin;
         
-        // ===== PAGE 1: COUVERTURE SIMPLIFIÉE =====
+        // ===== PAGE 1: COUVERTURE =====
         
         // Header bleu
         doc.setFillColor(15, 23, 42);
-        doc.rect(0, 0, 210, 50, 'F');
+        doc.rect(0, 0, 210, 40, 'F');
         
-        // Titre principal
-        doc.setFontSize(20);
+        doc.setFontSize(18);
         doc.setTextColor(255, 255, 255);
         doc.setFont('helvetica', 'bold');
         doc.text('ROADMAP D\'AUTOMATISATION', 105, 25, { align: 'center' });
         
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Analyse IA personnalisée', 105, 35, { align: 'center' });
+        yPosition = 60;
         
-        yPosition = 70;
-        
-        // Informations entreprise
-        doc.setFontSize(18);
+        // Entreprise
+        doc.setFontSize(16);
         doc.setTextColor(15, 23, 42);
         doc.setFont('helvetica', 'bold');
         doc.text(data.company, margin, yPosition);
         
         yPosition += 15;
         const date = new Date(data.generatedAt).toLocaleDateString('fr-FR');
-        doc.setFontSize(11);
-        doc.setTextColor(75, 85, 99);
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Rapport généré le ${date}`, margin, yPosition);
+        doc.text(`Généré le ${date}`, margin, yPosition);
         
         yPosition += 30;
         
-        // Statistiques simplifiées
-        doc.setFontSize(14);
-        doc.setTextColor(15, 23, 42);
-        doc.setFont('helvetica', 'bold');
-        doc.text('SYNTHÈSE EXÉCUTIVE', margin, yPosition);
-        
-        yPosition += 20;
-        
+        // Stats
         const formData = window.auditApp.collectFormData();
         const employeeCount = window.auditApp.getEmployeeCount(formData.employees);
         const sectorMultiplier = window.auditApp.getSectorMultiplier(formData.sector);
@@ -613,222 +600,101 @@ function generatePDF() {
         const roi = Math.round(savings * 38 * 12);
         const automationScore = Math.round(55 + Math.random() * 30);
         
-        // Stats en format professionnel avec boxes
-        const statHeight = 60;
-        
-        // Box pour les stats
-        doc.setFillColor(250, 250, 250);
-        doc.rect(margin, yPosition, 170, statHeight, 'F');
-        doc.setDrawColor(6, 182, 212);
-        doc.setLineWidth(0.5);
-        doc.rect(margin, yPosition, 170, statHeight, 'S');
-        
-        yPosition += 15;
-        
-        // Stats avec icônes et meilleure présentation
         doc.setFontSize(12);
-        doc.setTextColor(16, 185, 129);
-        doc.setFont('helvetica', 'bold');
-        doc.text(`⏱ ${savings}h économisées/mois`, margin + 10, yPosition);
-        yPosition += 18;
-        
         doc.setTextColor(6, 182, 212);
-        doc.text(`💰 ${roi.toLocaleString('fr-FR')}€ ROI annuel`, margin + 10, yPosition);
-        yPosition += 18;
+        doc.setFont('helvetica', 'bold');
+        doc.text('SYNTHÈSE EXÉCUTIVE', margin, yPosition);
+        yPosition += 20;
         
-        doc.setTextColor(15, 23, 42);
-        doc.text(`🎯 ${automationScore}% potentiel d'automatisation`, margin + 10, yPosition);
+        doc.setFontSize(10);
+        doc.setTextColor(50, 50, 50);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`• Heures économisées: ${savings}h/mois`, margin, yPosition);
+        yPosition += 12;
+        doc.text(`• ROI annuel: ${roi.toLocaleString('fr-FR')}€`, margin, yPosition);
+        yPosition += 12;
+        doc.text(`• Potentiel d'automatisation: ${automationScore}%`, margin, yPosition);
         
-        yPosition += 40;
+        yPosition += 30;
         
         // Contact
-        doc.setFillColor(248, 250, 252);
-        doc.rect(margin, yPosition, 170, 60, 'F');
-        
-        yPosition += 15;
         doc.setFontSize(12);
         doc.setTextColor(15, 23, 42);
         doc.setFont('helvetica', 'bold');
-        doc.text('VOTRE EXPERT EN AUTOMATISATION', margin + 10, yPosition);
+        doc.text('CONTACT', margin, yPosition);
+        yPosition += 15;
         
-        yPosition += 12;
         doc.setFontSize(10);
-        doc.setTextColor(75, 85, 99);
+        doc.setTextColor(50, 50, 50);
         doc.setFont('helvetica', 'normal');
-        doc.text('Antoine - Equilibre Tech', margin + 10, yPosition);
-        
+        doc.text('Antoine - Equilibre Tech', margin, yPosition);
         yPosition += 10;
-        doc.text('Spécialiste automatisation PME/ESN', margin + 10, yPosition);
+        doc.text('contact@equilibretech.com', margin, yPosition);
         
-        yPosition += 12;
-        doc.setTextColor(6, 182, 212);
-        doc.text('Email: contact@equilibretech.com', margin + 10, yPosition);
-        
-        yPosition += 8;
-        doc.text('LinkedIn: linkedin.com/in/equilibretech', margin + 10, yPosition);
-        
-        // ===== PAGE 2: PLAN D'ACTION ROBUSTE =====
+        // ===== PAGE 2: PLAN D'ACTION =====
         doc.addPage();
         yPosition = margin;
         
-        // Header page 2 avec style
-        doc.setFillColor(15, 23, 42);
-        doc.rect(0, 0, 210, 30, 'F');
-        
         doc.setFontSize(16);
-        doc.setTextColor(255, 255, 255);
+        doc.setTextColor(15, 23, 42);
         doc.setFont('helvetica', 'bold');
-        doc.text('PLAN D\'ACTION PERSONNALISÉ', margin, 20);
+        doc.text('PLAN D\'ACTION', margin, yPosition);
+        yPosition += 25;
         
-        yPosition = 50;
-        
-        // Debug: Vérifier le contenu de la roadmap
-        console.log('Roadmap data:', data.roadmap);
-        
-        // Parser beaucoup plus robuste
-        let roadmapContent = data.roadmap;
-        
-        // Si le contenu existe, le traiter
-        if (roadmapContent && roadmapContent.trim()) {
-            // Créer un élément temporaire pour parser le HTML
+        // Parser simple et efficace
+        if (data.roadmap && data.roadmap.trim()) {
             const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = roadmapContent;
+            tempDiv.innerHTML = data.roadmap;
             
-            const sections = [];
-            let currentSection = null;
+            let sectionCount = 0;
             
-            // Parcourir tous les éléments
-            const allElements = tempDiv.querySelectorAll('*');
-            
-            allElements.forEach(element => {
-                const text = element.textContent.trim();
-                if (!text) return;
-                
-                // Détecter les titres (H1, H2, H3 ou texte en gras)
-                if (element.tagName.match(/^H[1-6]$/) || 
-                    element.style.fontWeight === 'bold' ||
-                    text.match(/^\d+\.\s*[A-Z\s]+$/)) {
-                    
-                    if (currentSection && currentSection.content.length > 0) {
-                        sections.push(currentSection);
-                    }
-                    
-                    currentSection = {
-                        title: text.replace(/^\d+\.\s*/, '').replace(/\*\*/g, ''),
-                        content: []
-                    };
+            // Traiter les H3 et UL
+            Array.from(tempDiv.children).forEach(element => {
+                if (yPosition > 260) {
+                    doc.addPage();
+                    yPosition = margin;
                 }
-                // Détecter les items de liste
-                else if (element.tagName === 'LI' || text.startsWith('•') || text.startsWith('-')) {
-                    if (currentSection && text.length > 5) {
-                        const cleanText = text.replace(/^[•\-]\s*/, '').trim();
-                        if (!currentSection.content.includes(cleanText)) {
-                            currentSection.content.push(cleanText);
-                        }
-                    }
-                }
-            });
-            
-            if (currentSection && currentSection.content.length > 0) {
-                sections.push(currentSection);
-            }
-            
-            // Si aucune section trouvée, parser différemment
-            if (sections.length === 0) {
-                const lines = roadmapContent.split(/\n/).filter(line => line.trim());
-                let currentTitle = null;
-                let currentItems = [];
                 
-                lines.forEach(line => {
-                    const cleanLine = line.replace(/<[^>]*>/g, '').trim();
-                    if (!cleanLine) return;
-                    
-                    if (cleanLine.match(/^\d+\.|^[A-Z\s]{5,}$/)) {
-                        if (currentTitle && currentItems.length > 0) {
-                            sections.push({ title: currentTitle, content: currentItems });
-                        }
-                        currentTitle = cleanLine.replace(/^\d+\.\s*/, '');
-                        currentItems = [];
-                    } else if (cleanLine.match(/^[•\-\*]/) || cleanLine.length > 20) {
-                        const item = cleanLine.replace(/^[•\-\*]\s*/, '');
-                        if (item.length > 5) {
-                            currentItems.push(item);
-                        }
-                    }
-                });
-                
-                if (currentTitle && currentItems.length > 0) {
-                    sections.push({ title: currentTitle, content: currentItems });
-                }
-            }
-            
-            // Affichage professionnel des sections
-            if (sections.length > 0) {
-                sections.forEach((section, index) => {
-                    // Gestion des pages
-                    if (yPosition > 240) {
-                        doc.addPage();
-                        yPosition = margin;
-                    }
-                    
-                    // Titre de section avec style
-                    doc.setFillColor(6, 182, 212, 0.1);
-                    doc.rect(margin, yPosition - 5, 170, 20, 'F');
-                    
-                    doc.setFontSize(13);
+                if (element.tagName === 'H3') {
+                    sectionCount++;
+                    doc.setFontSize(12);
                     doc.setTextColor(6, 182, 212);
                     doc.setFont('helvetica', 'bold');
-                    doc.text(`${index + 1}. ${section.title.toUpperCase()}`, margin + 5, yPosition + 8);
+                    doc.text(`${sectionCount}. ${element.textContent}`, margin, yPosition);
+                    yPosition += 15;
+                } else if (element.tagName === 'UL') {
+                    doc.setFontSize(10);
+                    doc.setTextColor(50, 50, 50);
+                    doc.setFont('helvetica', 'normal');
                     
-                    yPosition += 25;
-                    
-                    // Contenu avec puces
-                    section.content.forEach(item => {
+                    Array.from(element.querySelectorAll('li')).forEach(li => {
                         if (yPosition > 270) {
                             doc.addPage();
                             yPosition = margin;
                         }
                         
-                        // Puce colorée
-                        doc.setFillColor(6, 182, 212);
-                        doc.circle(margin + 8, yPosition - 2, 1.5, 'F');
-                        
-                        // Texte de l'item
-                        doc.setFontSize(10);
-                        doc.setTextColor(50, 50, 50);
-                        doc.setFont('helvetica', 'normal');
-                        
-                        const lines = doc.splitTextToSize(item, 160);
+                        const lines = doc.splitTextToSize(`• ${li.textContent}`, 170);
                         lines.forEach(line => {
-                            doc.text(line, margin + 15, yPosition);
-                            yPosition += 12;
+                            doc.text(line, margin + 5, yPosition);
+                            yPosition += 10;
                         });
-                        
-                        yPosition += 3;
+                        yPosition += 2;
                     });
-                    
-                    yPosition += 15;
-                });
-            } else {
-                // Message de fallback si aucun contenu trouvé
-                doc.setFontSize(12);
-                doc.setTextColor(200, 50, 50);
-                doc.setFont('helvetica', 'italic');
-                doc.text('Contenu en cours de génération...', margin, yPosition);
-                
-                yPosition += 20;
-                doc.setFontSize(10);
-                doc.setTextColor(100, 100, 100);
-                doc.text('Veuillez générer une nouvelle roadmap pour voir le plan d\'action détaillé.', margin, yPosition);
-            }
+                    yPosition += 10;
+                }
+            });
+        } else {
+            doc.setFontSize(12);
+            doc.setTextColor(200, 50, 50);
+            doc.text('Aucun contenu disponible', margin, yPosition);
         }
         
-        // Pied de page simple
+        // Pied de page
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
             doc.setFontSize(8);
-            doc.setTextColor(156, 163, 175);
+            doc.setTextColor(150, 150, 150);
             doc.text('Audit Flash IA - Equilibre Tech', margin, 287);
             doc.text(`Page ${i}/${pageCount}`, 190, 287, { align: 'right' });
         }
@@ -837,17 +703,9 @@ function generatePDF() {
         const filename = `Roadmap-Automatisation-${data.company.replace(/[^a-zA-Z0-9]/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
         doc.save(filename);
         
-        // Analytics
-        if (typeof gtag !== 'undefined') {
-            gtag('event', 'download', {
-                event_category: 'engagement',
-                event_label: 'roadmap_pdf_simple'
-            });
-        }
-        
     } catch (error) {
-        console.error('Erreur génération PDF:', error);
-        generateSimplePDF();
+        console.error('Erreur PDF:', error);
+        alert('Erreur lors de la génération du PDF');
     }
 }
 
